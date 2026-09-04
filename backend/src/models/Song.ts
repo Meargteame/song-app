@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { ISong } from "../types/song";
 
-export interface ISongDocument extends ISong, Document {}
+export interface ISongDocument extends Omit<ISong, "_id">, Document {}
 
 const SongSchema: Schema = new Schema(
   {

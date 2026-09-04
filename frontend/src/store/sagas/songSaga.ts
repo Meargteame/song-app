@@ -49,6 +49,8 @@ function* handleCreateSong(action: PayloadAction<CreateSongDTO>) {
       action.payload
     );
     yield put(createSongSuccess(response.data));
+    // Automatically re-sync statistics
+    yield put(fetchStatsStart());
   } catch (error: any) {
     yield put(
       createSongFailure(error.response?.data?.message || "Failed to create song")
@@ -67,6 +69,8 @@ function* handleUpdateSong(
       action.payload.data
     );
     yield put(updateSongSuccess(response.data));
+    // Automatically re-sync statistics
+    yield put(fetchStatsStart());
   } catch (error: any) {
     yield put(
       updateSongFailure(error.response?.data?.message || "Failed to update song")
@@ -79,6 +83,8 @@ function* handleDeleteSong(action: PayloadAction<string>) {
   try {
     yield call(songApi.delete, action.payload);
     yield put(deleteSongSuccess(action.payload));
+    // Automatically re-sync statistics
+    yield put(fetchStatsStart());
   } catch (error: any) {
     yield put(
       deleteSongFailure(error.response?.data?.message || "Failed to delete song")

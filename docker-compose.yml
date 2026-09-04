@@ -1,0 +1,51 @@
+services:
+  # 1. MongoDB Database Service
+  mongodb:
+    image: mongo:latest
+    container_name: song_app_mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - song-app-network
+
+  # 2. Node.js + Express Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: song_app_backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGODB_URI=mongodb://mongodb:27017/song-app
+      - NODE_ENV=production
+    depends_on:
+      - mongodb
+    networks:
+      - song-app-network
+
+  # 3. React + Vite + Nginx Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: song_app_frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - song-app-network
+
+volumes:
+  mongo-data:
+
+networks:
+  song-app-network:
+    driver: bridge
