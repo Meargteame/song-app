@@ -33,10 +33,6 @@ import {
   fetchStatsFailure,
 } from "../slices/songSlice";
 import { RootState } from "../index";
-
-import { toggleFavorite } from "../../api/authApi";
-import { updateUserFavorites } from "../slices/authSlice";
-
 import axios from "axios";
 
 // Helper function to strictly extract error messages without using 'any'
@@ -141,17 +137,10 @@ function* handleBatchCreate(action: PayloadAction<CreateSongDTO[]>) {
 function* handleToggleFavorite(action: PayloadAction<string>) {
   try {
     const song: Song | undefined = yield select((state: RootState) =>
-      state.songs.songs.find((s) => s._id === action.payload)
+      state.songs.songs.find((s: Song) => s._id === action.payload)
     );
     if (song) {
       yield call(songApi.update, action.payload, { isFavorite: song.isFavorite });
-    }
-    const token: string | null = yield select((state: RootState) => state.auth.token);
-    if (token) {
-      const favRes: ApiResponse<{ favorites: string[] }> = yield call(toggleFavorite, action.payload);
-      if (favRes.data?.favorites) {
-        yield put(updateUserFavorites(favRes.data.favorites));
-      }
     }
   } catch (error: unknown) {
     console.error("Failed to sync favorite status to server", error);

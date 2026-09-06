@@ -30,8 +30,6 @@ import { AudioPlayerBar } from "./components/AudioPlayerBar";
 import { LyricsDrawer } from "./components/LyricsDrawer";
 import { SkeletonGrid } from "./components/SkeletonCard";
 import { ConfirmModal } from "./components/ConfirmModal";
-import { AuthModal } from "./components/AuthModal";
-import { openAuthModal, setAuthError } from "./store/slices/authSlice";
 
 /* ——— Animations ——— */
 const fadeIn = keyframes`
@@ -408,8 +406,6 @@ export const App: React.FC = () => {
     currentPage,
   } = useAppSelector((state) => state.songs);
 
-  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSong, setEditingSong] = useState<Song | null>(null);
   const [detailsSong, setDetailsSong] = useState<Song | null>(null);
@@ -453,28 +449,12 @@ export const App: React.FC = () => {
     }
   }, [successMessage, error, dispatch]);
 
-  const checkAdminAuth = (actionName: string): boolean => {
-    if (!isAuthenticated) {
-      dispatch(openAuthModal("login"));
-      dispatch(setAuthError(`Please log in as Admin to ${actionName}. Use Quick Admin Demo below!`));
-      return false;
-    }
-    if (user?.role !== "admin") {
-      dispatch(openAuthModal("login"));
-      dispatch(setAuthError(`Admin privileges required to ${actionName}. Please log in with an Admin account.`));
-      return false;
-    }
-    return true;
-  };
-
   const handleOpenAdd = () => {
-    if (!checkAdminAuth("create songs")) return;
     setEditingSong(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (song: Song) => {
-    if (!checkAdminAuth("edit songs")) return;
     setEditingSong(song);
     setIsModalOpen(true);
   };
@@ -488,7 +468,6 @@ export const App: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (!checkAdminAuth("delete songs")) return;
     const song = songs.find((s) => s._id === id);
     setConfirmState({
       isOpen: true,
@@ -769,8 +748,6 @@ export const App: React.FC = () => {
           onConfirm={confirmState.onConfirm}
           onCancel={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
         />
-
-        <AuthModal />
 
         <LyricsDrawer />
         <AudioPlayerBar />
