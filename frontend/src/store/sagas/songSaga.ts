@@ -34,6 +34,19 @@ import {
 } from "../slices/songSlice";
 import { RootState } from "../index";
 
+import axios from "axios";
+
+// Helper function to strictly extract error messages without using 'any'
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.message || error.message || fallback;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return fallback;
+};
+
 // 1. Worker Saga: Fetch Songs
 function* handleFetchSongs(action: PayloadAction<string | undefined>) {
   try {
@@ -42,10 +55,8 @@ function* handleFetchSongs(action: PayloadAction<string | undefined>) {
       action.payload
     );
     yield put(fetchSongsSuccess(response.data));
-  } catch (error: any) {
-    yield put(
-      fetchSongsFailure(error.response?.data?.message || "Failed to fetch songs")
-    );
+  } catch (error: unknown) {
+    yield put(fetchSongsFailure(getErrorMessage(error, "Failed to fetch songs")));
   }
 }
 
@@ -59,10 +70,8 @@ function* handleCreateSong(action: PayloadAction<CreateSongDTO>) {
     yield put(createSongSuccess(response.data));
     // Automatically re-sync statistics
     yield put(fetchStatsStart());
-  } catch (error: any) {
-    yield put(
-      createSongFailure(error.response?.data?.message || "Failed to create song")
-    );
+  } catch (error: unknown) {
+    yield put(createSongFailure(getErrorMessage(error, "Failed to create song")));
   }
 }
 
@@ -79,10 +88,8 @@ function* handleUpdateSong(
     yield put(updateSongSuccess(response.data));
     // Automatically re-sync statistics
     yield put(fetchStatsStart());
-  } catch (error: any) {
-    yield put(
-      updateSongFailure(error.response?.data?.message || "Failed to update song")
-    );
+  } catch (error: unknown) {
+    yield put(updateSongFailure(getErrorMessage(error, "Failed to update song")));
   }
 }
 
@@ -93,10 +100,8 @@ function* handleDeleteSong(action: PayloadAction<string>) {
     yield put(deleteSongSuccess(action.payload));
     // Automatically re-sync statistics
     yield put(fetchStatsStart());
-  } catch (error: any) {
-    yield put(
-      deleteSongFailure(error.response?.data?.message || "Failed to delete song")
-    );
+  } catch (error: unknown) {
+    yield put(deleteSongFailure(getErrorMessage(error, "Failed to delete song")));
   }
 }
 
@@ -106,9 +111,9 @@ function* handleBatchDelete(action: PayloadAction<string[]>) {
     yield call(songApi.batchDelete, action.payload);
     yield put(batchDeleteSuccess(action.payload));
     yield put(fetchStatsStart());
-  } catch (error: any) {
+  } catch (error: unknown) {
     yield put(
-      batchDeleteFailure(error.response?.data?.message || "Failed to delete selected songs")
+      batchDeleteFailure(getErrorMessage(error, "Failed to delete selected songs"))
     );
   }
 }
@@ -122,9 +127,9 @@ function* handleBatchCreate(action: PayloadAction<CreateSongDTO[]>) {
     );
     yield put(batchCreateSuccess(response.data));
     yield put(fetchStatsStart());
-  } catch (error: any) {
+  } catch (error: unknown) {
     yield put(
-      batchCreateFailure(error.response?.data?.message || "Failed to import songs")
+      batchCreateFailure(getErrorMessage(error, "Failed to import songs"))
     );
   }
 }
@@ -138,7 +143,7 @@ function* handleToggleFavorite(action: PayloadAction<string>) {
     if (song) {
       yield call(songApi.update, action.payload, { isFavorite: song.isFavorite });
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Failed to sync favorite status to server", error);
   }
 }
@@ -150,11 +155,9 @@ function* handleFetchStats() {
       songApi.getStatistics
     );
     yield put(fetchStatsSuccess(response.data));
-  } catch (error: any) {
+  } catch (error: unknown) {
     yield put(
-      fetchStatsFailure(
-        error.response?.data?.message || "Failed to fetch statistics"
-      )
+      fetchStatsFailure(getErrorMessage(error, "Failed to fetch statistics"))
     );
   }
 }

@@ -10,6 +10,7 @@ import {
   toggleSelectSong,
   setActiveLyricsSong,
 } from "../store/slices/songSlice";
+import { formatDate } from "../utils/formatters";
 
 const Card = styled.div<{ isSelected: boolean }>`
   background: ${theme.colors.cardBg};
@@ -278,7 +279,7 @@ export const SongCard: React.FC<SongCardProps> = ({ song, onEdit, onDelete }) =>
           </DetailItem>
           <DetailItem>
             <span>Added</span>
-            <span>{new Date(song.createdAt).toLocaleDateString()}</span>
+            <span>{formatDate(song.createdAt)}</span>
           </DetailItem>
         </DetailsList>
       </div>

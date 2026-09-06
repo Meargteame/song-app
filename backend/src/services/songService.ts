@@ -50,33 +50,45 @@ export class SongService {
   static async getStatistics(): Promise<IStatistics> {
     const [
       totalSongs,
+      distinctArtists,
+      distinctAlbums,
+      distinctGenres,
       songsPerGenre,
       songsPerArtist,
       songsPerAlbum,
       albumsPerArtist,
     ] = await Promise.all([
-      // Total count of all songs
+      // 1. Total count of all songs
       Song.countDocuments(),
 
-      // Count of songs grouped by genre
+      // 2. Distinct count of unique artists
+      Song.distinct("artist"),
+
+      // 3. Distinct count of unique albums
+      Song.distinct("album"),
+
+      // 4. Distinct count of unique genres
+      Song.distinct("genre"),
+
+      // 5. # of songs in every genre
       Song.aggregate([
         { $group: { _id: "$genre", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
 
-      // Count of songs grouped by artist
+      // 6. # of songs each artist has
       Song.aggregate([
         { $group: { _id: "$artist", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
 
-      // Count of songs grouped by album
+      // 7. # of songs in each album
       Song.aggregate([
         { $group: { _id: "$album", count: { $sum: 1 } } },
         { $sort: { count: -1 } },
       ]),
 
-      // Count of distinct albums per artist
+      // 8. # of albums each artist has
       Song.aggregate([
         { $group: { _id: { artist: "$artist", album: "$album" } } },
         { $group: { _id: "$_id.artist", count: { $sum: 1 } } },
@@ -86,6 +98,9 @@ export class SongService {
 
     return {
       totalSongs,
+      totalArtists: distinctArtists.length,
+      totalAlbums: distinctAlbums.length,
+      totalGenres: distinctGenres.length,
       songsPerGenre,
       songsPerArtist,
       songsPerAlbum,

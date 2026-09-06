@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import {
@@ -15,6 +15,7 @@ import {
 } from "./store/slices/songSlice";
 import { Song, CreateSongDTO } from "./types";
 import { Container, theme, Button } from "./styles";
+import { useSongFilters } from "./hooks/useSongFilters";
 import { Navbar } from "./components/Navbar";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { SongCard } from "./components/SongCard";
@@ -244,8 +245,16 @@ export const App: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSong, setEditingSong] = useState<Song | null>(null);
-  const [selectedGenre, setSelectedGenre] = useState<string>("");
-  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Custom filter hook handles search query, genre filtering, and favorites
+  const {
+    searchQuery,
+    setSearchQuery,
+    selectedGenre,
+    setSelectedGenre,
+    filteredSongs,
+    favoritesCount,
+  } = useSongFilters({ songs, activeTab });
 
   useEffect(() => {
     dispatch(fetchSongsStart(selectedGenre || undefined));
@@ -295,32 +304,9 @@ export const App: React.FC = () => {
     }
   };
 
-  // Filter based on Active Tab (All vs Favorites) and Search query
-  const filteredSongs = useMemo(() => {
-    let list = songs || [];
-    if (activeTab === "favorites") {
-      list = list.filter((s) => s.isFavorite);
-    }
-
-    if (!searchQuery.trim()) return list;
-    const query = searchQuery.toLowerCase();
-    return list.filter(
-      (s) =>
-        s.title.toLowerCase().includes(query) ||
-        s.artist.toLowerCase().includes(query) ||
-        s.album.toLowerCase().includes(query) ||
-        s.genre.toLowerCase().includes(query) ||
-        (s.releaseYear && String(s.releaseYear).includes(query))
-    );
-  }, [songs, activeTab, searchQuery]);
-
   const handleSelectAllVisible = () => {
     dispatch(selectAllSongs(filteredSongs.map((s) => s._id)));
   };
-
-  const favoritesCount = useMemo(() => {
-    return (songs || []).filter((s) => s.isFavorite).length;
-  }, [songs]);
 
   return (
     <AppWrapper>

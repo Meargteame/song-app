@@ -42,6 +42,9 @@ export interface UpdateSongDTO {
 
 export interface Statistics {
   totalSongs: number;
+  totalArtists?: number;
+  totalAlbums?: number;
+  totalGenres?: number;
   songsPerGenre: Array<{ _id: string; count: number }>;
   songsPerArtist: Array<{ _id: string; count: number }>;
   songsPerAlbum: Array<{ _id: string; count: number }>;

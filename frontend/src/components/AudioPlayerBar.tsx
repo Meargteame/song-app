@@ -9,6 +9,7 @@ import {
   playNext,
   playPrev,
 } from "../store/slices/songSlice";
+import { formatTime, parseDurationToSeconds } from "../utils/formatters";
 
 const eqBounce = keyframes`
   0%, 100% { height: 4px; }
@@ -224,23 +225,9 @@ export const AudioPlayerBar: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const synthTimerRef = useRef<number | null>(null);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
-  };
-
   // Convert duration string "3:45" to seconds if available
   useEffect(() => {
-    if (currentSong?.duration) {
-      const parts = currentSong.duration.split(":");
-      if (parts.length === 2) {
-        const secs = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-        if (!isNaN(secs) && secs > 0) setDuration(secs);
-      }
-    } else {
-      setDuration(180);
-    }
+    setDuration(parseDurationToSeconds(currentSong?.duration, 180));
     setCurrentTime(0);
   }, [currentSong]);
 
