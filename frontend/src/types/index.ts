@@ -51,6 +51,14 @@ export interface Statistics {
   albumsPerArtist: Array<{ _id: string; count: number }>;
 }
 
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: "admin" | "user";
+  favorites: string[];
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message?: string;

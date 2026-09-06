@@ -30,6 +30,8 @@ import { AudioPlayerBar } from "./components/AudioPlayerBar";
 import { LyricsDrawer } from "./components/LyricsDrawer";
 import { SkeletonGrid } from "./components/SkeletonCard";
 import { ConfirmModal } from "./components/ConfirmModal";
+import { AuthModal } from "./components/AuthModal";
+import { openAuthModal, setAuthError } from "./store/slices/authSlice";
 
 /* ——— Animations ——— */
 const fadeIn = keyframes`
@@ -358,7 +360,7 @@ const Toast = styled.div<{ type: "success" | "error" }>`
   background: ${theme.colors.cardBg};
   border: 1px solid
     ${({ type }) =>
-      type === "success" ? "rgba(34, 197, 94, 0.4)" : "rgba(239, 68, 68, 0.4)"};
+    type === "success" ? "rgba(34, 197, 94, 0.4)" : "rgba(239, 68, 68, 0.4)"};
   color: ${({ type }) =>
     type === "success" ? "#16a34a" : "#dc2626"};
   padding: 0.75rem 1.25rem;
@@ -406,6 +408,8 @@ export const App: React.FC = () => {
     currentPage,
   } = useAppSelector((state) => state.songs);
 
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSong, setEditingSong] = useState<Song | null>(null);
   const [detailsSong, setDetailsSong] = useState<Song | null>(null);
@@ -416,7 +420,7 @@ export const App: React.FC = () => {
     title: string;
     message: string;
     onConfirm: () => void;
-  }>({ isOpen: false, title: "", message: "", onConfirm: () => {} });
+  }>({ isOpen: false, title: "", message: "", onConfirm: () => { } });
 
   // Sync document theme
   useEffect(() => {
@@ -449,12 +453,28 @@ export const App: React.FC = () => {
     }
   }, [successMessage, error, dispatch]);
 
+  const checkAdminAuth = (actionName: string): boolean => {
+    if (!isAuthenticated) {
+      dispatch(openAuthModal("login"));
+      dispatch(setAuthError(`Please log in as Admin to ${actionName}. Use Quick Admin Demo below!`));
+      return false;
+    }
+    if (user?.role !== "admin") {
+      dispatch(openAuthModal("login"));
+      dispatch(setAuthError(`Admin privileges required to ${actionName}. Please log in with an Admin account.`));
+      return false;
+    }
+    return true;
+  };
+
   const handleOpenAdd = () => {
+    if (!checkAdminAuth("create songs")) return;
     setEditingSong(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEdit = (song: Song) => {
+    if (!checkAdminAuth("edit songs")) return;
     setEditingSong(song);
     setIsModalOpen(true);
   };
@@ -468,6 +488,7 @@ export const App: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
+    if (!checkAdminAuth("delete songs")) return;
     const song = songs.find((s) => s._id === id);
     setConfirmState({
       isOpen: true,
@@ -657,8 +678,8 @@ export const App: React.FC = () => {
             {activeTab === "favorites"
               ? "Click the heart icon on any song card to add it to your favorites."
               : searchQuery
-              ? `No songs matching "${searchQuery}".`
-              : "The song catalog is currently empty."}
+                ? `No songs matching "${searchQuery}".`
+                : "The song catalog is currently empty."}
           </p>
           {activeTab === "all" && (
             <Button variant="primary" onClick={handleOpenAdd}>
@@ -748,6 +769,8 @@ export const App: React.FC = () => {
           onConfirm={confirmState.onConfirm}
           onCancel={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
         />
+
+        <AuthModal />
 
         <LyricsDrawer />
         <AudioPlayerBar />

@@ -3,6 +3,7 @@ import styled from "@emotion/styled";
 import { theme, Button } from "../styles";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { toggleThemeMode, setCurrentPage, setActiveTab } from "../store/slices/songSlice";
+import { openAuthModal, logout } from "../store/slices/authSlice";
 
 const SidebarContainer = styled.aside`
   width: 240px;
@@ -10,7 +11,7 @@ const SidebarContainer = styled.aside`
   border-right: 1px solid ${theme.colors.cardBorder};
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 90px);
+  height: 100vh;
   position: fixed;
   top: 0;
   left: 0;
@@ -46,8 +47,8 @@ const Brand = styled.div`
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  margin-bottom: 1.5rem;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 1rem;
 
   @media (max-width: 768px) {
     justify-content: center;
@@ -88,6 +89,100 @@ const BrandText = styled.h1`
   }
 `;
 
+const UserProfileCard = styled.div`
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+    justify-content: center;
+  }
+
+  @media (max-width: 640px) {
+    display: none;
+  }
+`;
+
+const UserAvatar = styled.div<{ isAdmin?: boolean }>`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: ${({ isAdmin }) => (isAdmin ? "linear-gradient(135deg, #eab308, #ca8a04)" : "linear-gradient(135deg, #3b82f6, #1d4ed8)")};
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+  }
+`;
+
+const UserDetails = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const UserName = styled.span`
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: ${theme.colors.textPrimary};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const RoleTag = styled.span<{ roleType: "admin" | "user" }>`
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: ${({ roleType }) => (roleType === "admin" ? "#facc15" : "#60a5fa")};
+`;
+
+const AuthBtn = styled.button`
+  background: transparent;
+  border: none;
+  color: #a7a7a7;
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+
+  &:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
 const NavSection = styled.nav`
   display: flex;
   flex-direction: column;
@@ -109,7 +204,7 @@ const NavSectionLabel = styled.div`
   letter-spacing: 0.08em;
   color: ${theme.colors.textMuted};
   padding: 0.5rem 0.75rem 0.25rem 0.75rem;
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
 
   @media (max-width: 768px) {
     display: none;
@@ -211,6 +306,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenAddModal }) => {
   const { currentPage, activeTab, themeMode, statistics } = useAppSelector(
     (state) => state.songs
   );
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
 
   return (
     <SidebarContainer>
@@ -222,6 +318,51 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenAddModal }) => {
         </LogoIcon>
         <BrandText>AuraTune</BrandText>
       </Brand>
+
+      {/* User Account Card */}
+      {isAuthenticated && user ? (
+        <UserProfileCard>
+          <UserAvatar isAdmin={user.role === "admin"}>
+            {user.role === "admin" ? (
+              <svg viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            )}
+          </UserAvatar>
+          <UserDetails>
+            <UserName>{user.name}</UserName>
+            <RoleTag roleType={user.role}>
+              {user.role === "admin" ? "👑 Admin" : "🎧 Listener"}
+            </RoleTag>
+          </UserDetails>
+          <AuthBtn onClick={() => dispatch(logout())} title="Log Out">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+          </AuthBtn>
+        </UserProfileCard>
+      ) : (
+        <UserProfileCard style={{ cursor: "pointer" }} onClick={() => dispatch(openAuthModal("login"))}>
+          <UserAvatar>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" y1="12" x2="3" y2="12"></line>
+            </svg>
+          </UserAvatar>
+          <UserDetails>
+            <UserName>Guest Listener</UserName>
+            <RoleTag roleType="user">Click to Sign In</RoleTag>
+          </UserDetails>
+        </UserProfileCard>
+      )}
 
       <Button
         variant="primary"

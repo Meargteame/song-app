@@ -34,6 +34,9 @@ import {
 } from "../slices/songSlice";
 import { RootState } from "../index";
 
+import { toggleFavorite } from "../../api/authApi";
+import { updateUserFavorites } from "../slices/authSlice";
+
 import axios from "axios";
 
 // Helper function to strictly extract error messages without using 'any'
@@ -142,6 +145,13 @@ function* handleToggleFavorite(action: PayloadAction<string>) {
     );
     if (song) {
       yield call(songApi.update, action.payload, { isFavorite: song.isFavorite });
+    }
+    const token: string | null = yield select((state: RootState) => state.auth.token);
+    if (token) {
+      const favRes: ApiResponse<{ favorites: string[] }> = yield call(toggleFavorite, action.payload);
+      if (favRes.data?.favorites) {
+        yield put(updateUserFavorites(favRes.data.favorites));
+      }
     }
   } catch (error: unknown) {
     console.error("Failed to sync favorite status to server", error);
