@@ -113,12 +113,15 @@ export const PlaylistsPage: React.FC<PlaylistsPageProps> = ({ onEdit, onDelete, 
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newPlName.trim()) return;
-    dispatch(createPlaylist(newPlName));
+    const trimmed = newPlName.trim();
+    if (!trimmed) return;
+    const newId = `pl-${Date.now()}`;
+    dispatch(createPlaylist({ id: newId, name: trimmed }));
+    setSelectedPlId(newId);
     setNewPlName("");
   };
 
-  const currentPlaylist = playlists.find((p) => p.id === selectedPlId);
+  const currentPlaylist = playlists.find((p) => p.id === selectedPlId) || playlists[0];
   const playlistSongs = songs.filter((s) => currentPlaylist?.songIds.includes(s._id));
 
   return (

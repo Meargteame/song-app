@@ -285,11 +285,12 @@ const songSlice = createSlice({
     },
 
     // Playlists Actions
-    createPlaylist(state, action: PayloadAction<string>) {
-      const name = action.payload.trim();
+    createPlaylist(state, action: PayloadAction<string | { id?: string; name: string }>) {
+      const name = typeof action.payload === "string" ? action.payload.trim() : action.payload.name.trim();
+      const customId = typeof action.payload === "object" ? action.payload.id : undefined;
       if (!name) return;
       const newPl: Playlist = {
-        id: `pl-${Date.now()}`,
+        id: customId || `pl-${Date.now()}`,
         name,
         songIds: [],
         createdAt: new Date().toISOString(),
