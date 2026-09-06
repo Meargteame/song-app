@@ -126,13 +126,17 @@ export const StatsDashboard: React.FC = () => {
     return null;
   }
 
+  const songsPerGenre = statistics.songsPerGenre || [];
+  const songsPerArtist = statistics.songsPerArtist || [];
+  const albumsPerArtist = statistics.albumsPerArtist || [];
+
   return (
     <Section>
       <SectionTitle>Analytics</SectionTitle>
       <StatsGrid>
         <StatCard>
           <StatTitle>Total Songs</StatTitle>
-          <StatValue>{statistics.totalSongs}</StatValue>
+          <StatValue>{statistics.totalSongs || 0}</StatValue>
           <span style={{ fontSize: "0.8rem", color: theme.colors.textMuted }}>
             Catalog count
           </span>
@@ -141,13 +145,13 @@ export const StatsDashboard: React.FC = () => {
         <StatCard>
           <StatTitle>
             Songs by Genre
-            <BreakdownBadge>{statistics.songsPerGenre.length}</BreakdownBadge>
+            <BreakdownBadge>{songsPerGenre.length}</BreakdownBadge>
           </StatTitle>
           <BreakdownContainer>
-            {statistics.songsPerGenre.length === 0 ? (
+            {songsPerGenre.length === 0 ? (
               <EmptyNotice>No genres recorded</EmptyNotice>
             ) : (
-              statistics.songsPerGenre.map((g) => (
+              songsPerGenre.map((g) => (
                 <BreakdownItem key={g._id || "unknown"}>
                   <BreakdownLabel>{g._id || "Unknown"}</BreakdownLabel>
                   <BreakdownBadge>{g.count}</BreakdownBadge>
@@ -160,13 +164,13 @@ export const StatsDashboard: React.FC = () => {
         <StatCard>
           <StatTitle>
             Songs by Artist
-            <BreakdownBadge>{statistics.songsPerArtist.length}</BreakdownBadge>
+            <BreakdownBadge>{songsPerArtist.length}</BreakdownBadge>
           </StatTitle>
           <BreakdownContainer>
-            {statistics.songsPerArtist.length === 0 ? (
+            {songsPerArtist.length === 0 ? (
               <EmptyNotice>No artists recorded</EmptyNotice>
             ) : (
-              statistics.songsPerArtist.slice(0, 5).map((a) => (
+              songsPerArtist.slice(0, 5).map((a) => (
                 <BreakdownItem key={a._id || "unknown"}>
                   <BreakdownLabel>{a._id || "Unknown"}</BreakdownLabel>
                   <BreakdownBadge>{a.count}</BreakdownBadge>
@@ -179,13 +183,13 @@ export const StatsDashboard: React.FC = () => {
         <StatCard>
           <StatTitle>
             Albums by Artist
-            <BreakdownBadge>{statistics.albumsPerArtist.length}</BreakdownBadge>
+            <BreakdownBadge>{albumsPerArtist.length}</BreakdownBadge>
           </StatTitle>
           <BreakdownContainer>
-            {statistics.albumsPerArtist.length === 0 ? (
+            {albumsPerArtist.length === 0 ? (
               <EmptyNotice>No albums recorded</EmptyNotice>
             ) : (
-              statistics.albumsPerArtist.slice(0, 5).map((item) => (
+              albumsPerArtist.slice(0, 5).map((item) => (
                 <BreakdownItem key={item._id || "unknown"}>
                   <BreakdownLabel>{item._id || "Unknown"}</BreakdownLabel>
                   <BreakdownBadge>{item.count}</BreakdownBadge>

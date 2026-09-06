@@ -29,7 +29,7 @@ const songSlice = createSlice({
       state.error = null;
     },
     fetchSongsSuccess(state, action: PayloadAction<Song[]>) {
-      state.songs = action.payload;
+      state.songs = Array.isArray(action.payload) ? action.payload : [];
       state.loading = false;
     },
     fetchSongsFailure(state, action: PayloadAction<string>) {

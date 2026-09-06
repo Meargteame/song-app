@@ -240,7 +240,7 @@ export const App: React.FC = () => {
               onChange={(e) => setSelectedGenre(e.target.value)}
             >
               <option value="">All Genres</option>
-              {statistics?.songsPerGenre.map((g) => (
+              {(statistics?.songsPerGenre || []).map((g) => (
                 <option key={g._id || "unknown"} value={g._id}>
                   {g._id || "Unknown"}
                 </option>
