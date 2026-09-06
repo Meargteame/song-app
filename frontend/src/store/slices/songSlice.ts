@@ -12,6 +12,7 @@ export interface SongState {
   // Navigation & View
   activeTab: "all" | "favorites";
   viewMode: "cards" | "analytics";
+  currentPage: "songs" | "analytics";
   
   // Selection for batch actions
   selectedSongIds: string[];
@@ -47,6 +48,7 @@ const initialState: SongState = {
   successMessage: null,
   activeTab: "all",
   viewMode: "cards",
+  currentPage: "songs",
   selectedSongIds: [],
   currentSong: null,
   isPlaying: false,
@@ -202,6 +204,9 @@ const songSlice = createSlice({
     setViewMode(state, action: PayloadAction<"cards" | "analytics">) {
       state.viewMode = action.payload;
     },
+    setCurrentPage(state, action: PayloadAction<"songs" | "analytics">) {
+      state.currentPage = action.payload;
+    },
 
     // 7. Selection Actions
     toggleSelectSong(state, action: PayloadAction<string>) {
@@ -308,6 +313,7 @@ export const {
   playPrev,
   setActiveLyricsSong,
   toggleThemeMode,
+  setCurrentPage,
   clearNotification,
 } = songSlice.actions;
 

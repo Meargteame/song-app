@@ -44,6 +44,11 @@ const AppWrapper = styled.div`
   padding-bottom: 90px;
 `;
 
+/* ——— Page Container (animated swap) ——— */
+const PageContent = styled.div`
+  animation: ${fadeIn} 0.25s ease-out;
+`;
+
 /* ——— Tabs ——— */
 const TabsRow = styled.div`
   display: flex;
@@ -300,6 +305,7 @@ export const App: React.FC = () => {
     activeTab,
     selectedSongIds,
     themeMode,
+    currentPage,
   } = useAppSelector((state) => state.songs);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -391,161 +397,148 @@ export const App: React.FC = () => {
     dispatch(selectAllSongs(filteredSongs.map((s) => s._id)));
   };
 
+  /* ——— Render Songs Page ——— */
+  const renderSongsPage = () => (
+    <PageContent key="songs">
+      {/* Tabs */}
+      <TabsRow>
+        <TabButton
+          active={activeTab === "all"}
+          onClick={() => dispatch(setActiveTab("all"))}
+        >
+          All Songs ({songs.length})
+        </TabButton>
+        <TabButton
+          active={activeTab === "favorites"}
+          onClick={() => dispatch(setActiveTab("favorites"))}
+        >
+          Favorites ({favoritesCount})
+        </TabButton>
+      </TabsRow>
+
+      {/* Batch Operations */}
+      {selectedSongIds.length > 0 && (
+        <BatchBar>
+          <BatchMeta>
+            <span>{selectedSongIds.length} song(s) selected</span>
+            <Button variant="outline" size="sm" onClick={handleSelectAllVisible}>
+              Select All Visible ({filteredSongs.length})
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => dispatch(clearSelectedSongs())}>
+              Clear Selection
+            </Button>
+          </BatchMeta>
+          <BatchActions>
+            <Button variant="danger" size="sm" onClick={handleBatchDelete}>
+              Delete Selected ({selectedSongIds.length})
+            </Button>
+          </BatchActions>
+        </BatchBar>
+      )}
+
+      {/* Search, Genre, Sort Controls */}
+      <ControlsBar>
+        <ControlsLeft>
+          <SearchInputWrapper>
+            <SearchIcon>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </SearchIcon>
+            <SearchInput
+              placeholder="Search by title, artist, album..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </SearchInputWrapper>
+
+          <SelectControl
+            value={selectedGenre}
+            onChange={(e) => setSelectedGenre(e.target.value)}
+          >
+            <option value="">All Genres</option>
+            {(statistics?.songsPerGenre || []).map((g) => (
+              <option key={g._id || "unknown"} value={g._id}>
+                {g._id || "Unknown"}
+              </option>
+            ))}
+          </SelectControl>
+
+          <SelectControl
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="title">Title A–Z</option>
+            <option value="artist">Artist A–Z</option>
+            <option value="genre">Genre A–Z</option>
+          </SelectControl>
+        </ControlsLeft>
+      </ControlsBar>
+
+      {/* Section Header */}
+      <SectionHeader>
+        <SectionTitle>
+          {activeTab === "favorites" ? "Favorite Tracks" : "Catalog"}
+          <CountBadge>{filteredSongs.length} songs</CountBadge>
+        </SectionTitle>
+      </SectionHeader>
+
+      {/* Content: Skeleton / Empty / Grid */}
+      {loading && songs.length === 0 ? (
+        <Grid>
+          <SkeletonGrid count={6} />
+        </Grid>
+      ) : filteredSongs.length === 0 ? (
+        <EmptyState>
+          <h3 style={{ margin: "0 0 0.5rem 0", color: theme.colors.textPrimary, fontSize: "1.1rem" }}>
+            {activeTab === "favorites" ? "No Favorites Yet" : "No Songs Found"}
+          </h3>
+          <p style={{ color: theme.colors.textMuted, margin: "0 0 1.25rem 0", fontSize: "0.875rem" }}>
+            {activeTab === "favorites"
+              ? "Click the heart icon on any song card to add it to your favorites."
+              : searchQuery
+              ? `No songs matching "${searchQuery}".`
+              : "The song catalog is currently empty."}
+          </p>
+          {activeTab === "all" && (
+            <Button variant="primary" onClick={handleOpenAdd}>
+              + Add Song
+            </Button>
+          )}
+        </EmptyState>
+      ) : (
+        <Grid>
+          {filteredSongs.map((song, index) => (
+            <AnimatedCardWrapper key={song._id} index={index}>
+              <SongCard
+                song={song}
+                onEdit={handleOpenEdit}
+                onDelete={handleDelete}
+              />
+            </AnimatedCardWrapper>
+          ))}
+        </Grid>
+      )}
+    </PageContent>
+  );
+
+  /* ——— Render Analytics Page ——— */
+  const renderAnalyticsPage = () => (
+    <PageContent key="analytics">
+      <StatsDashboard />
+    </PageContent>
+  );
+
   return (
     <AppWrapper>
       <Container>
         <Navbar onOpenAddModal={handleOpenAdd} />
 
-        <StatsDashboard />
-
-        {/* Navigation Tabs */}
-        <TabsRow>
-          <TabButton
-            active={activeTab === "all"}
-            onClick={() => dispatch(setActiveTab("all"))}
-          >
-            All Songs ({songs.length})
-          </TabButton>
-          <TabButton
-            active={activeTab === "favorites"}
-            onClick={() => dispatch(setActiveTab("favorites"))}
-          >
-            Favorites ({favoritesCount})
-          </TabButton>
-        </TabsRow>
-
-        {/* Batch Operations Toolbar */}
-        {selectedSongIds.length > 0 && (
-          <BatchBar>
-            <BatchMeta>
-              <span>{selectedSongIds.length} song(s) selected</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleSelectAllVisible}
-              >
-                Select All Visible ({filteredSongs.length})
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => dispatch(clearSelectedSongs())}
-              >
-                Clear Selection
-              </Button>
-            </BatchMeta>
-            <BatchActions>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={handleBatchDelete}
-              >
-                Delete Selected ({selectedSongIds.length})
-              </Button>
-            </BatchActions>
-          </BatchBar>
-        )}
-
-        {/* Search, Genre, Sort Controls */}
-        <ControlsBar>
-          <ControlsLeft>
-            <SearchInputWrapper>
-              <SearchIcon>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-              </SearchIcon>
-              <SearchInput
-                placeholder="Search by title, artist, album..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </SearchInputWrapper>
-
-            <SelectControl
-              value={selectedGenre}
-              onChange={(e) => setSelectedGenre(e.target.value)}
-            >
-              <option value="">All Genres</option>
-              {(statistics?.songsPerGenre || []).map((g) => (
-                <option key={g._id || "unknown"} value={g._id}>
-                  {g._id || "Unknown"}
-                </option>
-              ))}
-            </SelectControl>
-
-            <SelectControl
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortOption)}
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="title">Title A–Z</option>
-              <option value="artist">Artist A–Z</option>
-              <option value="genre">Genre A–Z</option>
-            </SelectControl>
-          </ControlsLeft>
-        </ControlsBar>
-
-        {/* Section Header */}
-        <SectionHeader>
-          <SectionTitle>
-            {activeTab === "favorites" ? "Favorite Tracks" : "Catalog"}
-            <CountBadge>{filteredSongs.length} songs</CountBadge>
-          </SectionTitle>
-        </SectionHeader>
-
-        {/* Content: Skeleton / Empty / Grid */}
-        {loading && songs.length === 0 ? (
-          <Grid>
-            <SkeletonGrid count={6} />
-          </Grid>
-        ) : filteredSongs.length === 0 ? (
-          <EmptyState>
-            <h3
-              style={{
-                margin: "0 0 0.5rem 0",
-                color: theme.colors.textPrimary,
-                fontSize: "1.1rem",
-              }}
-            >
-              {activeTab === "favorites"
-                ? "No Favorites Yet"
-                : "No Songs Found"}
-            </h3>
-            <p
-              style={{
-                color: theme.colors.textMuted,
-                margin: "0 0 1.25rem 0",
-                fontSize: "0.875rem",
-              }}
-            >
-              {activeTab === "favorites"
-                ? "Click the heart icon on any song card to add it to your favorites."
-                : searchQuery
-                ? `No songs matching "${searchQuery}".`
-                : "The song catalog is currently empty."}
-            </p>
-            {activeTab === "all" && (
-              <Button variant="primary" onClick={handleOpenAdd}>
-                + Add Song
-              </Button>
-            )}
-          </EmptyState>
-        ) : (
-          <Grid>
-            {filteredSongs.map((song, index) => (
-              <AnimatedCardWrapper key={song._id} index={index}>
-                <SongCard
-                  song={song}
-                  onEdit={handleOpenEdit}
-                  onDelete={handleDelete}
-                />
-              </AnimatedCardWrapper>
-            ))}
-          </Grid>
-        )}
+        {/* Page Router */}
+        {currentPage === "songs" ? renderSongsPage() : renderAnalyticsPage()}
 
         {/* Modals */}
         <SongModal
@@ -564,13 +557,9 @@ export const App: React.FC = () => {
           onCancel={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
         />
 
-        {/* Lyrics Drawer Modal */}
         <LyricsDrawer />
-
-        {/* Floating Bottom Audio Player */}
         <AudioPlayerBar />
 
-        {/* Toast Notifications */}
         {successMessage && <Toast type="success">{successMessage}</Toast>}
         {error && <Toast type="error">{error}</Toast>}
       </Container>
