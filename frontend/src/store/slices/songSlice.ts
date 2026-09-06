@@ -23,7 +23,6 @@ export interface SongState {
 
   // Active Lyrics Modal
   activeLyricsSong: Song | null;
-  isExportImportOpen: boolean;
 }
 
 const initialState: SongState = {
@@ -40,7 +39,6 @@ const initialState: SongState = {
   isPlaying: false,
   volume: 0.8,
   activeLyricsSong: null,
-  isExportImportOpen: false,
 };
 
 const songSlice = createSlice({
@@ -154,7 +152,6 @@ const songSlice = createSlice({
     batchCreateSuccess(state, action: PayloadAction<Song[]>) {
       state.songs = [...action.payload, ...state.songs];
       state.actionLoading = false;
-      state.isExportImportOpen = false;
       state.successMessage = `Imported ${action.payload.length} songs successfully!`;
     },
     batchCreateFailure(state, action: PayloadAction<string>) {
@@ -242,9 +239,6 @@ const songSlice = createSlice({
     setActiveLyricsSong(state, action: PayloadAction<Song | null>) {
       state.activeLyricsSong = action.payload;
     },
-    setExportImportOpen(state, action: PayloadAction<boolean>) {
-      state.isExportImportOpen = action.payload;
-    },
 
     // Clear alerts/messages
     clearNotification(state) {
@@ -289,7 +283,6 @@ export const {
   playNext,
   playPrev,
   setActiveLyricsSong,
-  setExportImportOpen,
   clearNotification,
 } = songSlice.actions;
 

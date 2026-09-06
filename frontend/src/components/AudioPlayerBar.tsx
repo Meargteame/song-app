@@ -304,7 +304,11 @@ export const AudioPlayerBar: React.FC = () => {
     <PlayerContainer>
       <TrackInfo>
         <CoverThumb bg={currentSong.coverArt ? `url("${currentSong.coverArt}")` : undefined}>
-          {!currentSong.coverArt && "🎵"}
+          {!currentSong.coverArt && (
+            <span style={{ fontSize: "0.8rem", color: theme.colors.textMuted, fontWeight: 600 }}>
+              Track
+            </span>
+          )}
         </CoverThumb>
         <TrackMeta>
           <TrackTitle title={currentSong.title}>{currentSong.title}</TrackTitle>
@@ -351,7 +355,7 @@ export const AudioPlayerBar: React.FC = () => {
           <EqBar active={isPlaying} delay="0.4s" />
           <EqBar active={isPlaying} delay="0.1s" />
         </Equalizer>
-        <span style={{ fontSize: "0.85rem", color: theme.colors.textMuted }}>🔊</span>
+        <span style={{ fontSize: "0.75rem", color: theme.colors.textMuted, fontWeight: 500 }}>Vol</span>
         <VolumeSlider
           type="range"
           min={0}

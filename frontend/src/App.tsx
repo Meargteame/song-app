@@ -22,12 +22,11 @@ import { SongCard } from "./components/SongCard";
 import { SongModal } from "./components/SongModal";
 import { AudioPlayerBar } from "./components/AudioPlayerBar";
 import { LyricsDrawer } from "./components/LyricsDrawer";
-import { ExportImportModal } from "./components/ExportImportModal";
 
 const AppWrapper = styled.div`
   min-height: 100vh;
   background-color: ${theme.colors.background};
-  padding-bottom: 90px; /* Space for sticky audio player bar */
+  padding-bottom: 90px;
 `;
 
 const TabsRow = styled.div`
@@ -60,8 +59,8 @@ const TabButton = styled.button<{ active: boolean }>`
 `;
 
 const BatchBar = styled.div`
-  background: #18181c;
-  border: 1px solid #38bdf8;
+  background: ${theme.colors.surface};
+  border: 1px solid ${theme.colors.cardBorderHover};
   border-radius: 8px;
   padding: 0.75rem 1.25rem;
   margin-bottom: 1.25rem;
@@ -70,18 +69,6 @@ const BatchBar = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.75rem;
-  animation: slideDown 0.2s ease-out;
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 `;
 
 const BatchMeta = styled.div`
@@ -321,13 +308,13 @@ export const App: React.FC = () => {
             active={activeTab === "all"}
             onClick={() => dispatch(setActiveTab("all"))}
           >
-            🎵 All Songs ({songs.length})
+            All Songs ({songs.length})
           </TabButton>
           <TabButton
             active={activeTab === "favorites"}
             onClick={() => dispatch(setActiveTab("favorites"))}
           >
-            ❤️ Favorites ({favoritesCount})
+            Favorites ({favoritesCount})
           </TabButton>
         </TabsRow>
 
@@ -335,7 +322,7 @@ export const App: React.FC = () => {
         {selectedSongIds.length > 0 && (
           <BatchBar>
             <BatchMeta>
-              <span>⚡ {selectedSongIds.length} song(s) selected</span>
+              <span>{selectedSongIds.length} song(s) selected</span>
               <Button
                 variant="outline"
                 size="sm"
@@ -357,7 +344,7 @@ export const App: React.FC = () => {
                 size="sm"
                 onClick={handleBatchDelete}
               >
-                🗑️ Delete Selected ({selectedSongIds.length})
+                Delete Selected ({selectedSongIds.length})
               </Button>
             </BatchActions>
           </BatchBar>
@@ -394,7 +381,7 @@ export const App: React.FC = () => {
 
         <SectionHeader>
           <SectionTitle>
-            {activeTab === "favorites" ? "❤️ Favorite Tracks" : "Catalog"}
+            {activeTab === "favorites" ? "Favorite Tracks" : "Catalog"}
             <CountBadge>{filteredSongs.length} songs</CountBadge>
           </SectionTitle>
         </SectionHeader>
@@ -424,7 +411,7 @@ export const App: React.FC = () => {
               }}
             >
               {activeTab === "favorites"
-                ? "Click the heart icon 🤍 on any song card to add it to your favorites."
+                ? "Click the heart icon on any song card to add it to your favorites."
                 : searchQuery
                 ? `No songs matching "${searchQuery}".`
                 : "The song catalog is currently empty."}
@@ -457,9 +444,6 @@ export const App: React.FC = () => {
 
         {/* Lyrics Drawer Modal */}
         <LyricsDrawer />
-
-        {/* Backup & Export/Import Modal */}
-        <ExportImportModal />
 
         {/* Floating Bottom Audio Player */}
         <AudioPlayerBar />
