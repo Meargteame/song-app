@@ -139,7 +139,6 @@ export const LyricsDrawer: React.FC = () => {
             activeLyricsSong.lyrics
           ) : (
             <EmptyLyrics>
-              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📝</div>
               No lyrics added for this song yet.
             </EmptyLyrics>
           )}
@@ -148,7 +147,7 @@ export const LyricsDrawer: React.FC = () => {
         <DrawerFooter>
           {activeLyricsSong.lyrics ? (
             <Button variant="secondary" size="sm" onClick={handleCopy}>
-              {copied ? "✓ Copied to Clipboard" : "📋 Copy Lyrics"}
+              {copied ? "Copied" : "Copy Lyrics"}
             </Button>
           ) : (
             <div />
