@@ -295,7 +295,9 @@ export const AudioPlayerBar: React.FC = () => {
       if (!audioRef.current) {
         audioRef.current = new Audio();
       }
-      audioRef.current.src = currentSong.audioUrl;
+      if (audioRef.current.src !== currentSong.audioUrl) {
+        audioRef.current.src = currentSong.audioUrl;
+      }
       audioRef.current.volume = isMuted ? 0 : volume;
 
       if (isPlaying) {
@@ -308,7 +310,7 @@ export const AudioPlayerBar: React.FC = () => {
         audioRef.current.pause();
       }
     }
-  }, [currentSong, isPlaying, isMuted, volume]);
+  }, [currentSong, isPlaying]);
 
   useEffect(() => {
     if (audioRef.current) {
