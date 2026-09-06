@@ -8,8 +8,13 @@ import {
 } from "../types";
 
 // Create a pre-configured Axios instance
+const rawBaseUrl = import.meta.env.VITE_API_URL || "";
+const sanitizedBaseUrl = rawBaseUrl.endsWith("/")
+  ? rawBaseUrl.slice(0, -1)
+  : rawBaseUrl;
+
 const api = axios.create({
-  baseURL: "/api/songs",
+  baseURL: sanitizedBaseUrl ? `${sanitizedBaseUrl}/api/songs` : "/api/songs",
   headers: {
     "Content-Type": "application/json",
   },

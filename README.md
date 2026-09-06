@@ -79,3 +79,56 @@ All requests to `/api/songs` accept and return JSON payloads.
 | `GET` | `/api/songs/statistics` | Retrieve aggregated catalog statistics | None |
 
 ---
+
+## 🌐 Deployment to the Internet (Free Tier)
+
+To deploy this full-stack application online, you need 3 components:
+1. **Database:** Free cloud MongoDB database on **MongoDB Atlas**
+2. **Backend API:** Hosted on **Render** / **Railway**
+3. **Frontend App:** Hosted on **Vercel** / **Netlify** / **Render**
+
+---
+
+### Step 1: Create a Free MongoDB Database (MongoDB Atlas)
+1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register) and create a free account.
+2. Create a free **M0 Shared Cluster**.
+3. Under **Database Access**, create a database user (username and password).
+4. Under **Network Access**, click **Add IP Address** and select **Allow Access from Anywhere** (`0.0.0.0/0`).
+5. In your cluster dashboard, click **Connect** → **Drivers** → Copy the connection string URI:
+   ```text
+   mongodb+srv://<username>:<password>@cluster0.mongodb.net/song-app?retryWrites=true&w=majority
+   ```
+
+---
+
+### Step 2: Deploy Backend (Render.com)
+1. Push your code to a GitHub repository.
+2. Go to [Render.com](https://dashboard.render.com/) and click **New +** → **Web Service**.
+3. Connect your GitHub repository.
+4. Fill in the following settings:
+   - **Root Directory:** `backend`
+   - **Environment:** `Node`
+   - **Build Command:** `npm install -g pnpm && pnpm install && pnpm run build`
+   - **Start Command:** `node dist/server.js`
+5. Under **Environment Variables**, add:
+   - `MONGODB_URI`: `<Your MongoDB Atlas connection URI from Step 1>`
+   - `NODE_ENV`: `production`
+   - `PORT`: `5000`
+6. Click **Create Web Service**. Once deployed, copy your backend URL (e.g. `https://song-app-backend.onrender.com`).
+
+---
+
+### Step 3: Deploy Frontend (Vercel or Netlify)
+
+#### Option A: Vercel (Recommended)
+1. Go to [Vercel](https://vercel.com/) and click **Add New...** → **Project**.
+2. Import your GitHub repository.
+3. Configure the project:
+   - **Framework Preset:** Vite
+   - **Root Directory:** `frontend`
+4. Under **Environment Variables**, add:
+   - `VITE_API_URL`: `<Your Backend Render URL, e.g. https://song-app-backend.onrender.com>`
+5. Click **Deploy**.
+
+#### Option B: Deploy both via Render Blueprint
+If you connect the repo on Render using **Blueprints**, Render will automatically detect [render.yaml](file:///c:/Users/hp/Desktop/song-app/render.yaml) and deploy both the backend and frontend together. All you need to supply is your `MONGODB_URI` in the dashboard.
