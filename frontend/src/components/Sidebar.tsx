@@ -14,13 +14,31 @@ const SidebarContainer = styled.aside`
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 100;
+  z-index: 900;
   padding: 1.25rem 1rem;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
     width: 70px;
     padding: 1rem 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    position: fixed;
+    top: auto;
+    bottom: 80px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 54px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 0.5rem;
+    border-right: none;
+    border-top: 1px solid ${theme.colors.cardBorder};
+    background: var(--player-bg);
+    backdrop-filter: blur(16px);
   }
 `;
 
@@ -34,6 +52,10 @@ const Brand = styled.div`
   @media (max-width: 768px) {
     justify-content: center;
     padding: 0.5rem 0;
+  }
+
+  @media (max-width: 640px) {
+    display: none;
   }
 `;
 
@@ -70,6 +92,14 @@ const NavSection = styled.nav`
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+
+  @media (max-width: 640px) {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+    align-items: center;
+    gap: 0;
+  }
 `;
 
 const NavSectionLabel = styled.div`
@@ -125,6 +155,12 @@ const NavItem = styled.button<{ active: boolean }>`
       display: none;
     }
   }
+
+  @media (max-width: 640px) {
+    padding: 0.4rem;
+    width: auto;
+    border-radius: 50%;
+  }
 `;
 
 const BottomSection = styled.div`
@@ -134,6 +170,10 @@ const BottomSection = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+
+  @media (max-width: 640px) {
+    display: none;
+  }
 `;
 
 const QuickStatsBox = styled.div`

@@ -59,7 +59,12 @@ const MainCanvas = styled.main`
 
   @media (max-width: 768px) {
     margin-left: 70px;
-    padding: 1.5rem 1rem 100px 1rem;
+    padding: 1.5rem 1rem 110px 1rem;
+  }
+
+  @media (max-width: 640px) {
+    margin-left: 0;
+    padding: 1rem 0.85rem 150px 0.85rem;
   }
 `;
 
