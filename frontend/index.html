@@ -4,45 +4,47 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Melodex — Music Catalog & Analytics</title>
+    <title>AuraTune — Music Library & Analytics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
       :root, [data-theme="dark"] {
-        --bg-app: #09090b;
-        --bg-surface: #121215;
-        --bg-surface-hover: #18181c;
-        --bg-card: #141417;
-        --bg-card-hover: #19191d;
-        --bg-input: #09090b;
-        --border-subtle: #27272a;
-        --border-strong: #3f3f46;
-        --btn-primary-bg: #ffffff;
-        --btn-primary-text: #09090b;
-        --btn-primary-hover: #f4f4f5;
-        --btn-secondary-bg: #18181b;
-        --btn-secondary-hover: #27272a;
+        --bg-app: #0a0a0c;
+        --bg-surface: #121216;
+        --bg-surface-hover: #18181f;
+        --bg-card: #141419;
+        --bg-card-hover: #1c1c24;
+        --bg-input: #0a0a0c;
+        --border-subtle: #23232a;
+        --border-strong: #383842;
+        --music-accent: #10b981;
+        --music-accent-hover: #059669;
+        --btn-primary-bg: #10b981;
+        --btn-primary-text: #ffffff;
+        --btn-primary-hover: #059669;
+        --btn-secondary-bg: #1e1e26;
+        --btn-secondary-hover: #2a2a35;
         --color-danger: #ef4444;
         --color-danger-bg: rgba(239, 68, 68, 0.1);
         --color-danger-border: rgba(239, 68, 68, 0.25);
         --color-danger-hover: #dc2626;
-        --text-primary: #fafafa;
+        --text-primary: #f4f4f6;
         --text-secondary: #a1a1aa;
         --text-muted: #71717a;
-        --tag-bg: #1c1c21;
-        --tag-border: #2d2d34;
-        --tag-text: #d4d4d8;
-        --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
-        --shadow-card-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
+        --tag-bg: #1c1c24;
+        --tag-border: #2e2e38;
+        --tag-text: #e4e4e7;
+        --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3);
+        --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.45);
         --shadow-popover: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
-        --scrollbar-track: #09090b;
+        --scrollbar-track: #0a0a0c;
         --scrollbar-thumb: #27272a;
         --scrollbar-thumb-hover: #3f3f46;
-        --player-bg: rgba(18, 18, 21, 0.96);
-        --modal-bg: #141417;
-        --tab-active-bg: #27272a;
-        --tab-active-border: #3f3f46;
+        --player-bg: rgba(18, 18, 22, 0.96);
+        --modal-bg: #141419;
+        --tab-active-bg: #22222b;
+        --tab-active-border: #383842;
       }
 
       [data-theme="light"] {
@@ -54,6 +56,8 @@
         --bg-input: #ffffff;
         --border-subtle: #e2e8f0;
         --border-strong: #cbd5e1;
+        --music-accent: #10b981;
+        --music-accent-hover: #059669;
         --btn-primary-bg: #0f172a;
         --btn-primary-text: #ffffff;
         --btn-primary-hover: #1e293b;

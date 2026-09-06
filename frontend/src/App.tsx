@@ -13,6 +13,7 @@ import {
   clearSelectedSongs,
   setActiveTab,
   clearNotification,
+  playSong,
 } from "./store/slices/songSlice";
 import { Song, CreateSongDTO } from "./types";
 import { Container, theme, Button } from "./styles";
@@ -20,6 +21,7 @@ import { useSongFilters, SortOption } from "./hooks/useSongFilters";
 import { Navbar } from "./components/Navbar";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { SongCard } from "./components/SongCard";
+import { SongTableView } from "./components/SongTableView";
 import { SongModal } from "./components/SongModal";
 import { AudioPlayerBar } from "./components/AudioPlayerBar";
 import { LyricsDrawer } from "./components/LyricsDrawer";
@@ -203,6 +205,80 @@ const SelectControl = styled.select`
 
   @media (max-width: 640px) {
     width: 100%;
+  }
+`;
+
+/* ——— Hero Music Banner ——— */
+const HeroBanner = styled.div`
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(20, 20, 25, 0.8) 100%);
+  border: 1px solid ${theme.colors.cardBorder};
+  border-radius: 16px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 1.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  box-shadow: ${theme.shadows.card};
+
+  @media (max-width: 640px) {
+    padding: 1.25rem 1rem;
+  }
+`;
+
+const HeroMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const HeroTitle = styled.h2`
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0;
+  color: ${theme.colors.textPrimary};
+  letter-spacing: -0.03em;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+`;
+
+const HeroSubtitle = styled.p`
+  margin: 0;
+  font-size: 0.875rem;
+  color: ${theme.colors.textSecondary};
+`;
+
+const ViewToggleGroup = styled.div`
+  display: inline-flex;
+  background: ${theme.colors.surface};
+  border: 1px solid ${theme.colors.cardBorder};
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+`;
+
+const ViewToggleBtn = styled.button<{ active: boolean }>`
+  background: ${({ active }) => (active ? "var(--music-accent)" : "transparent")};
+  color: ${({ active }) => (active ? "#ffffff" : theme.colors.textMuted)};
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: ${({ active }) => (active ? "#ffffff" : theme.colors.textPrimary)};
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
   }
 `;
 
@@ -397,24 +473,82 @@ export const App: React.FC = () => {
     dispatch(selectAllSongs(filteredSongs.map((s) => s._id)));
   };
 
+  const [viewLayout, setViewLayout] = useState<"grid" | "list">("grid");
+
   /* ——— Render Songs Page ——— */
   const renderSongsPage = () => (
     <PageContent key="songs">
-      {/* Tabs */}
-      <TabsRow>
-        <TabButton
-          active={activeTab === "all"}
-          onClick={() => dispatch(setActiveTab("all"))}
-        >
-          All Songs ({songs.length})
-        </TabButton>
-        <TabButton
-          active={activeTab === "favorites"}
-          onClick={() => dispatch(setActiveTab("favorites"))}
-        >
-          Favorites ({favoritesCount})
-        </TabButton>
-      </TabsRow>
+      {/* Hero Banner */}
+      <HeroBanner>
+        <HeroMeta>
+          <HeroTitle>
+            Your Music Library
+          </HeroTitle>
+          <HeroSubtitle>
+            Manage, stream, and analyze your personal track collection
+          </HeroSubtitle>
+        </HeroMeta>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          {filteredSongs.length > 0 && (
+            <Button
+              variant="primary"
+              onClick={() => dispatch(playSong(filteredSongs[0]))}
+              style={{ padding: "0.55rem 1.25rem", borderRadius: "8px", fontWeight: 600 }}
+            >
+              <svg viewBox="0 0 24 24" style={{ width: "16px", height: "16px", fill: "currentColor" }}>
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Play Library
+            </Button>
+          )}
+          <Button
+            variant="secondary"
+            onClick={handleOpenAdd}
+            style={{ padding: "0.55rem 1.15rem", borderRadius: "8px" }}
+          >
+            + Add Track
+          </Button>
+        </div>
+      </HeroBanner>
+
+      {/* Tabs Row & Layout Switcher */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.75rem" }}>
+        <TabsRow style={{ margin: 0, padding: 0, border: "none" }}>
+          <TabButton
+            active={activeTab === "all"}
+            onClick={() => dispatch(setActiveTab("all"))}
+          >
+            All Songs ({songs.length})
+          </TabButton>
+          <TabButton
+            active={activeTab === "favorites"}
+            onClick={() => dispatch(setActiveTab("favorites"))}
+          >
+            Favorites ({favoritesCount})
+          </TabButton>
+        </TabsRow>
+
+        <ViewToggleGroup>
+          <ViewToggleBtn
+            active={viewLayout === "grid"}
+            onClick={() => setViewLayout("grid")}
+            title="Grid View (Album Cover Cards)"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z" />
+            </svg>
+          </ViewToggleBtn>
+          <ViewToggleBtn
+            active={viewLayout === "list"}
+            onClick={() => setViewLayout("list")}
+            title="List View (Spotify Tracklist Table)"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z" />
+            </svg>
+          </ViewToggleBtn>
+        </ViewToggleGroup>
+      </div>
 
       {/* Batch Operations */}
       {selectedSongIds.length > 0 && (
@@ -486,7 +620,7 @@ export const App: React.FC = () => {
         </SectionTitle>
       </SectionHeader>
 
-      {/* Content: Skeleton / Empty / Grid */}
+      {/* Content: Skeleton / Empty / Grid / List */}
       {loading && songs.length === 0 ? (
         <Grid>
           <SkeletonGrid count={6} />
@@ -509,6 +643,12 @@ export const App: React.FC = () => {
             </Button>
           )}
         </EmptyState>
+      ) : viewLayout === "list" ? (
+        <SongTableView
+          songs={filteredSongs}
+          onEdit={handleOpenEdit}
+          onDelete={handleDelete}
+        />
       ) : (
         <Grid>
           {filteredSongs.map((song, index) => (
