@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { Song } from "../types";
 
+export type SortOption = "newest" | "oldest" | "title" | "artist" | "genre";
+
 interface UseSongFiltersProps {
   songs: Song[];
   activeTab: "all" | "favorites";
@@ -9,6 +11,7 @@ interface UseSongFiltersProps {
 export const useSongFilters = ({ songs, activeTab }: UseSongFiltersProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
 
   const filteredSongs = useMemo(() => {
     let result = songs || [];
@@ -38,8 +41,34 @@ export const useSongFilters = ({ songs, activeTab }: UseSongFiltersProps) => {
       );
     }
 
-    return result;
-  }, [songs, activeTab, selectedGenre, searchQuery]);
+    // 4. Sort
+    const sorted = [...result];
+    switch (sortBy) {
+      case "newest":
+        sorted.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        break;
+      case "oldest":
+        sorted.sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+        break;
+      case "title":
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case "artist":
+        sorted.sort((a, b) => a.artist.localeCompare(b.artist));
+        break;
+      case "genre":
+        sorted.sort((a, b) => a.genre.localeCompare(b.genre));
+        break;
+    }
+
+    return sorted;
+  }, [songs, activeTab, selectedGenre, searchQuery, sortBy]);
 
   const favoritesCount = useMemo(() => {
     return (songs || []).filter((s) => s.isFavorite).length;
@@ -50,6 +79,8 @@ export const useSongFilters = ({ songs, activeTab }: UseSongFiltersProps) => {
     setSearchQuery,
     selectedGenre,
     setSelectedGenre,
+    sortBy,
+    setSortBy,
     filteredSongs,
     favoritesCount,
   };

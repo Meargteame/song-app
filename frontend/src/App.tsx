@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "@emotion/styled";
+import { keyframes } from "@emotion/react";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import {
   fetchSongsStart,
@@ -15,20 +16,35 @@ import {
 } from "./store/slices/songSlice";
 import { Song, CreateSongDTO } from "./types";
 import { Container, theme, Button } from "./styles";
-import { useSongFilters } from "./hooks/useSongFilters";
+import { useSongFilters, SortOption } from "./hooks/useSongFilters";
 import { Navbar } from "./components/Navbar";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { SongCard } from "./components/SongCard";
 import { SongModal } from "./components/SongModal";
 import { AudioPlayerBar } from "./components/AudioPlayerBar";
 import { LyricsDrawer } from "./components/LyricsDrawer";
+import { SkeletonGrid } from "./components/SkeletonCard";
+import { ConfirmModal } from "./components/ConfirmModal";
 
+/* ——— Animations ——— */
+const fadeIn = keyframes`
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+`;
+
+const toastSlide = keyframes`
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+`;
+
+/* ——— Layout ——— */
 const AppWrapper = styled.div`
   min-height: 100vh;
   background-color: ${theme.colors.background};
   padding-bottom: 90px;
 `;
 
+/* ——— Tabs ——— */
 const TabsRow = styled.div`
   display: flex;
   align-items: center;
@@ -36,6 +52,10 @@ const TabsRow = styled.div`
   margin-bottom: 1.5rem;
   border-bottom: 1px solid ${theme.colors.cardBorder};
   padding-bottom: 0.75rem;
+
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+  }
 `;
 
 const TabButton = styled.button<{ active: boolean }>`
@@ -50,6 +70,7 @@ const TabButton = styled.button<{ active: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  font-family: inherit;
 
   &:hover {
     color: ${theme.colors.textPrimary};
@@ -57,6 +78,7 @@ const TabButton = styled.button<{ active: boolean }>`
   }
 `;
 
+/* ——— Batch Bar ——— */
 const BatchBar = styled.div`
   background: ${theme.colors.surface};
   border: 1px solid ${theme.colors.cardBorderHover};
@@ -68,6 +90,7 @@ const BatchBar = styled.div`
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.75rem;
+  animation: ${fadeIn} 0.2s ease-out;
 `;
 
 const BatchMeta = styled.div`
@@ -77,6 +100,7 @@ const BatchMeta = styled.div`
   font-size: 0.875rem;
   font-weight: 500;
   color: ${theme.colors.textPrimary};
+  flex-wrap: wrap;
 `;
 
 const BatchActions = styled.div`
@@ -85,6 +109,7 @@ const BatchActions = styled.div`
   gap: 0.5rem;
 `;
 
+/* ——— Controls ——— */
 const ControlsBar = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -92,21 +117,31 @@ const ControlsBar = styled.div`
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
 const ControlsLeft = styled.div`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   flex: 1;
-  min-width: 280px;
+  min-width: 0;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
 
 const SearchInputWrapper = styled.div`
   position: relative;
   flex: 1;
-  min-width: 220px;
+  min-width: 200px;
 `;
 
 const SearchInput = styled.input`
@@ -118,10 +153,11 @@ const SearchInput = styled.input`
   border: 1px solid ${theme.colors.cardBorder};
   box-sizing: border-box;
   font-size: 0.875rem;
+  font-family: inherit;
 
   &:focus {
     outline: none;
-    border-color: #52525b;
+    border-color: ${theme.colors.cardBorderHover};
   }
 
   &::placeholder {
@@ -135,30 +171,44 @@ const SearchIcon = styled.span`
   top: 50%;
   transform: translateY(-50%);
   color: ${theme.colors.textMuted};
-  font-size: 0.85rem;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
-const GenreSelect = styled.select`
+const SelectControl = styled.select`
   padding: 0.55rem 0.85rem;
   border-radius: 6px;
   background: ${theme.colors.surface};
   color: ${theme.colors.textPrimary};
   border: 1px solid ${theme.colors.cardBorder};
   cursor: pointer;
-  font-size: 0.875rem;
+  font-size: 0.825rem;
+  font-family: inherit;
 
   &:focus {
     outline: none;
-    border-color: #52525b;
+    border-color: ${theme.colors.cardBorderHover};
+  }
+
+  @media (max-width: 640px) {
+    width: 100%;
   }
 `;
 
+/* ——— Section Header ——— */
 const SectionHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 `;
 
 const SectionTitle = styled.h2`
@@ -181,12 +231,23 @@ const CountBadge = styled.span`
   font-weight: 500;
 `;
 
+/* ——— Grid ——— */
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.15rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
+const AnimatedCardWrapper = styled.div<{ index: number }>`
+  animation: ${fadeIn} 0.3s ease-out both;
+  animation-delay: ${({ index }) => Math.min(index * 0.04, 0.4)}s;
+`;
+
+/* ——— Toast ——— */
 const Toast = styled.div<{ type: "success" | "error" }>`
   position: fixed;
   bottom: 5.5rem;
@@ -206,8 +267,16 @@ const Toast = styled.div<{ type: "success" | "error" }>`
   gap: 0.5rem;
   font-size: 0.875rem;
   font-weight: 500;
+  animation: ${toastSlide} 0.25s ease-out;
+
+  @media (max-width: 640px) {
+    right: 1rem;
+    left: 1rem;
+    bottom: 5rem;
+  }
 `;
 
+/* ——— Empty State ——— */
 const EmptyState = styled.div`
   text-align: center;
   padding: 3.5rem 2rem;
@@ -215,7 +284,10 @@ const EmptyState = styled.div`
   border: 1px solid ${theme.colors.cardBorder};
   border-radius: 10px;
   margin-top: 1rem;
+  animation: ${fadeIn} 0.3s ease-out;
 `;
+
+/* ========== APP COMPONENT ========== */
 
 export const App: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -233,17 +305,27 @@ export const App: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSong, setEditingSong] = useState<Song | null>(null);
 
+  // Confirm Modal State
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({ isOpen: false, title: "", message: "", onConfirm: () => {} });
+
   // Sync document theme
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", themeMode);
   }, [themeMode]);
 
-  // Custom filter hook handles search query, genre filtering, and favorites
+  // Custom filter & sort hook
   const {
     searchQuery,
     setSearchQuery,
     selectedGenre,
     setSelectedGenre,
+    sortBy,
+    setSortBy,
     filteredSongs,
     favoritesCount,
   } = useSongFilters({ songs, activeTab });
@@ -281,19 +363,28 @@ export const App: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm("Are you sure you want to delete this song?")) {
-      dispatch(deleteSongStart(id));
-    }
+    const song = songs.find((s) => s._id === id);
+    setConfirmState({
+      isOpen: true,
+      title: "Delete Song",
+      message: `Are you sure you want to delete "${song?.title || "this song"}"? This action cannot be undone.`,
+      onConfirm: () => {
+        dispatch(deleteSongStart(id));
+        setConfirmState((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
   };
 
   const handleBatchDelete = () => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete ${selectedSongIds.length} selected song(s)?`
-      )
-    ) {
-      dispatch(batchDeleteStart(selectedSongIds));
-    }
+    setConfirmState({
+      isOpen: true,
+      title: "Delete Selected Songs",
+      message: `Are you sure you want to delete ${selectedSongIds.length} selected song(s)? This action cannot be undone.`,
+      onConfirm: () => {
+        dispatch(batchDeleteStart(selectedSongIds));
+        setConfirmState((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
   };
 
   const handleSelectAllVisible = () => {
@@ -355,18 +446,24 @@ export const App: React.FC = () => {
           </BatchBar>
         )}
 
+        {/* Search, Genre, Sort Controls */}
         <ControlsBar>
           <ControlsLeft>
             <SearchInputWrapper>
-              <SearchIcon>⌕</SearchIcon>
+              <SearchIcon>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </SearchIcon>
               <SearchInput
-                placeholder="Search by title, artist, album, genre, year..."
+                placeholder="Search by title, artist, album..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </SearchInputWrapper>
 
-            <GenreSelect
+            <SelectControl
               value={selectedGenre}
               onChange={(e) => setSelectedGenre(e.target.value)}
             >
@@ -376,14 +473,22 @@ export const App: React.FC = () => {
                   {g._id || "Unknown"}
                 </option>
               ))}
-            </GenreSelect>
-          </ControlsLeft>
+            </SelectControl>
 
-          <Button variant="primary" size="md" onClick={handleOpenAdd}>
-            + Add Song
-          </Button>
+            <SelectControl
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="title">Title A–Z</option>
+              <option value="artist">Artist A–Z</option>
+              <option value="genre">Genre A–Z</option>
+            </SelectControl>
+          </ControlsLeft>
         </ControlsBar>
 
+        {/* Section Header */}
         <SectionHeader>
           <SectionTitle>
             {activeTab === "favorites" ? "Favorite Tracks" : "Catalog"}
@@ -391,10 +496,11 @@ export const App: React.FC = () => {
           </SectionTitle>
         </SectionHeader>
 
+        {/* Content: Skeleton / Empty / Grid */}
         {loading && songs.length === 0 ? (
-          <p style={{ color: theme.colors.textMuted, fontSize: "0.9rem" }}>
-            Loading songs...
-          </p>
+          <Grid>
+            <SkeletonGrid count={6} />
+          </Grid>
         ) : filteredSongs.length === 0 ? (
           <EmptyState>
             <h3
@@ -429,22 +535,33 @@ export const App: React.FC = () => {
           </EmptyState>
         ) : (
           <Grid>
-            {filteredSongs.map((song) => (
-              <SongCard
-                key={song._id}
-                song={song}
-                onEdit={handleOpenEdit}
-                onDelete={handleDelete}
-              />
+            {filteredSongs.map((song, index) => (
+              <AnimatedCardWrapper key={song._id} index={index}>
+                <SongCard
+                  song={song}
+                  onEdit={handleOpenEdit}
+                  onDelete={handleDelete}
+                />
+              </AnimatedCardWrapper>
             ))}
           </Grid>
         )}
 
+        {/* Modals */}
         <SongModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleModalSubmit}
           initialData={editingSong}
+        />
+
+        <ConfirmModal
+          isOpen={confirmState.isOpen}
+          title={confirmState.title}
+          message={confirmState.message}
+          confirmLabel="Delete"
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => setConfirmState((prev) => ({ ...prev, isOpen: false }))}
         />
 
         {/* Lyrics Drawer Modal */}
@@ -453,8 +570,9 @@ export const App: React.FC = () => {
         {/* Floating Bottom Audio Player */}
         <AudioPlayerBar />
 
-        {successMessage && <Toast type="success">✓ {successMessage}</Toast>}
-        {error && <Toast type="error">✕ {error}</Toast>}
+        {/* Toast Notifications */}
+        {successMessage && <Toast type="success">{successMessage}</Toast>}
+        {error && <Toast type="error">{error}</Toast>}
       </Container>
     </AppWrapper>
   );

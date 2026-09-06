@@ -148,6 +148,13 @@ const ModalActions = styled.div`
   background: ${theme.colors.surface};
 `;
 
+const FieldError = styled.span`
+  font-size: 0.72rem;
+  color: var(--color-danger);
+  margin-top: 0.15rem;
+  font-weight: 500;
+`;
+
 const COMMON_GENRES = ["Rock", "Pop", "Jazz", "Hip Hop", "Electronic", "R&B", "Classical", "Reggae", "Blues", "Acoustic"];
 
 interface SongModalProps {
@@ -175,6 +182,9 @@ export const SongModal: React.FC<SongModalProps> = ({
     lyrics: "",
   });
 
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [submitted, setSubmitted] = useState(false);
+
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -201,13 +211,29 @@ export const SongModal: React.FC<SongModalProps> = ({
         lyrics: "",
       });
     }
+    setTouched({});
+    setSubmitted(false);
   }, [initialData, isOpen]);
 
   if (!isOpen) return null;
 
+  const errors: Record<string, string> = {};
+  if (!formData.title.trim()) errors.title = "Song title is required";
+  if (!formData.artist.trim()) errors.artist = "Artist name is required";
+  if (!formData.album.trim()) errors.album = "Album name is required";
+  if (!formData.genre.trim()) errors.genre = "Genre is required";
+
+  const showError = (field: string) =>
+    (touched[field] || submitted) && errors[field];
+
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.artist.trim()) return;
+    setSubmitted(true);
+    if (Object.keys(errors).length > 0) return;
     onSubmit(formData);
     onClose();
   };
@@ -227,50 +253,66 @@ export const SongModal: React.FC<SongModalProps> = ({
             <FormGroup>
               <label>Song Title *</label>
               <input
-                required
                 placeholder="e.g. Bohemian Rhapsody"
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
+                onBlur={() => handleBlur("title")}
+                style={showError("title") ? { borderColor: "var(--color-danger)" } : {}}
               />
+              {showError("title") && (
+                <FieldError>{errors.title}</FieldError>
+              )}
             </FormGroup>
 
             <TwoColumnRow>
               <FormGroup>
                 <label>Artist *</label>
                 <input
-                  required
                   placeholder="e.g. Queen"
                   value={formData.artist}
                   onChange={(e) =>
                     setFormData({ ...formData, artist: e.target.value })
                   }
+                  onBlur={() => handleBlur("artist")}
+                  style={showError("artist") ? { borderColor: "var(--color-danger)" } : {}}
                 />
+                {showError("artist") && (
+                  <FieldError>{errors.artist}</FieldError>
+                )}
               </FormGroup>
               <FormGroup>
                 <label>Album *</label>
                 <input
-                  required
                   placeholder="e.g. A Night at the Opera"
                   value={formData.album}
                   onChange={(e) =>
                     setFormData({ ...formData, album: e.target.value })
                   }
+                  onBlur={() => handleBlur("album")}
+                  style={showError("album") ? { borderColor: "var(--color-danger)" } : {}}
                 />
+                {showError("album") && (
+                  <FieldError>{errors.album}</FieldError>
+                )}
               </FormGroup>
             </TwoColumnRow>
 
             <FormGroup>
               <label>Genre *</label>
               <input
-                required
                 placeholder="e.g. Rock"
                 value={formData.genre}
                 onChange={(e) =>
                   setFormData({ ...formData, genre: e.target.value })
                 }
+                onBlur={() => handleBlur("genre")}
+                style={showError("genre") ? { borderColor: "var(--color-danger)" } : {}}
               />
+              {showError("genre") && (
+                <FieldError>{errors.genre}</FieldError>
+              )}
               <GenreQuickPills>
                 {COMMON_GENRES.map((g) => (
                   <Pill
