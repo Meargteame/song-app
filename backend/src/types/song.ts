@@ -4,6 +4,12 @@ export interface ISong {
   artist: string;
   album: string;
   genre: string;
+  duration?: string;
+  releaseYear?: number;
+  coverArt?: string;
+  audioUrl?: string;
+  lyrics?: string;
+  isFavorite?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -13,6 +19,12 @@ export interface ICreateSongDTO {
   artist: string;
   album: string;
   genre: string;
+  duration?: string;
+  releaseYear?: number;
+  coverArt?: string;
+  audioUrl?: string;
+  lyrics?: string;
+  isFavorite?: boolean;
 }
 
 export interface IUpdateSongDTO {
@@ -20,6 +32,12 @@ export interface IUpdateSongDTO {
   artist?: string;
   album?: string;
   genre?: string;
+  duration?: string;
+  releaseYear?: number;
+  coverArt?: string;
+  audioUrl?: string;
+  lyrics?: string;
+  isFavorite?: boolean;
 }
 
 export interface IStatistics {

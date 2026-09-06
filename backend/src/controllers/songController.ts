@@ -65,6 +65,36 @@ export class SongController {
     }
   }
 
+  // 5.1. DELETE /api/songs/batch -> Batch delete songs
+  static async batchDelete(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { ids } = req.body;
+      if (!Array.isArray(ids) || ids.length === 0) {
+        res.status(400).json({ success: false, message: "Invalid or empty IDs array" });
+        return;
+      }
+      const deletedCount = await SongService.batchDeleteSongs(ids);
+      res.status(200).json({ success: true, message: `${deletedCount} songs deleted`, count: deletedCount });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // 5.2. POST /api/songs/batch -> Bulk import songs
+  static async batchCreate(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const { songs } = req.body;
+      if (!Array.isArray(songs) || songs.length === 0) {
+        res.status(400).json({ success: false, message: "Invalid or empty songs array" });
+        return;
+      }
+      const created = await SongService.batchCreateSongs(songs);
+      res.status(201).json({ success: true, count: created.length, data: created });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // 6. GET /api/songs/statistics -> Fetch aggregated statistics
   static async getStatistics(_req: Request, res: Response, next: NextFunction): Promise<void> {
     try {

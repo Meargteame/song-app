@@ -43,6 +43,14 @@ export const songApi = {
   delete: (id: string) =>
     api.delete<ApiResponse<Song>>(`/${id}`).then((res) => res.data),
 
+  // 5.1. Batch delete songs
+  batchDelete: (ids: string[]) =>
+    api.delete<ApiResponse<{ count: number }>>("/batch", { data: { ids } }).then((res) => res.data),
+
+  // 5.2. Batch create/import songs
+  batchCreate: (songs: CreateSongDTO[]) =>
+    api.post<ApiResponse<Song[]>>("/batch", { songs }).then((res) => res.data),
+
   // 6. Fetch overall statistics
   getStatistics: () =>
     api.get<ApiResponse<Statistics>>("/statistics").then((res) => res.data),

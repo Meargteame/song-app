@@ -4,6 +4,12 @@ export interface Song {
   artist: string;
   album: string;
   genre: string;
+  duration?: string;
+  releaseYear?: number;
+  coverArt?: string;
+  audioUrl?: string;
+  lyrics?: string;
+  isFavorite?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -13,6 +19,12 @@ export interface CreateSongDTO {
   artist: string;
   album: string;
   genre: string;
+  duration?: string;
+  releaseYear?: number;
+  coverArt?: string;
+  audioUrl?: string;
+  lyrics?: string;
+  isFavorite?: boolean;
 }
 
 export interface UpdateSongDTO {
@@ -20,6 +32,12 @@ export interface UpdateSongDTO {
   artist?: string;
   album?: string;
   genre?: string;
+  duration?: string;
+  releaseYear?: number;
+  coverArt?: string;
+  audioUrl?: string;
+  lyrics?: string;
+  isFavorite?: boolean;
 }
 
 export interface Statistics {

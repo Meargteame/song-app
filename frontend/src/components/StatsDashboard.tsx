@@ -1,19 +1,55 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { theme } from "../styles";
-import { useAppSelector } from "../store/hooks";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { setViewMode } from "../store/slices/songSlice";
+import { VisualCharts } from "./VisualCharts";
 
 const Section = styled.section`
   margin-bottom: 2rem;
+`;
+
+const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 `;
 
 const SectionTitle = styled.h3`
   font-size: 0.95rem;
   font-weight: 600;
   color: ${theme.colors.textSecondary};
-  margin: 0 0 1rem 0;
+  margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const ViewToggle = styled.div`
+  display: inline-flex;
+  background: ${theme.colors.surface};
+  border: 1px solid ${theme.colors.cardBorder};
+  border-radius: 6px;
+  padding: 2px;
+`;
+
+const ToggleBtn = styled.button<{ active: boolean }>`
+  background: ${({ active }) => (active ? "#27272a" : "transparent")};
+  color: ${({ active }) => (active ? theme.colors.textPrimary : theme.colors.textMuted)};
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.65rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: ${theme.colors.textPrimary};
+  }
 `;
 
 const StatsGrid = styled.div`
@@ -111,12 +147,15 @@ const EmptyNotice = styled.div`
 `;
 
 export const StatsDashboard: React.FC = () => {
-  const { statistics, loading } = useAppSelector((state) => state.songs);
+  const dispatch = useAppDispatch();
+  const { statistics, loading, viewMode } = useAppSelector((state) => state.songs);
 
   if (loading && !statistics) {
     return (
       <Section>
-        <SectionTitle>Analytics</SectionTitle>
+        <SectionHeader>
+          <SectionTitle>Analytics</SectionTitle>
+        </SectionHeader>
         <p style={{ color: theme.colors.textMuted, fontSize: "0.9rem" }}>Loading analytics...</p>
       </Section>
     );
@@ -132,73 +171,96 @@ export const StatsDashboard: React.FC = () => {
 
   return (
     <Section>
-      <SectionTitle>Analytics</SectionTitle>
-      <StatsGrid>
-        <StatCard>
-          <StatTitle>Total Songs</StatTitle>
-          <StatValue>{statistics.totalSongs || 0}</StatValue>
-          <span style={{ fontSize: "0.8rem", color: theme.colors.textMuted }}>
-            Catalog count
-          </span>
-        </StatCard>
+      <SectionHeader>
+        <SectionTitle>
+          <span>📊</span> Catalog Analytics
+        </SectionTitle>
+        <ViewToggle>
+          <ToggleBtn
+            active={viewMode === "cards"}
+            onClick={() => dispatch(setViewMode("cards"))}
+          >
+            Cards
+          </ToggleBtn>
+          <ToggleBtn
+            active={viewMode === "analytics"}
+            onClick={() => dispatch(setViewMode("analytics"))}
+          >
+            Visual Charts
+          </ToggleBtn>
+        </ViewToggle>
+      </SectionHeader>
 
-        <StatCard>
-          <StatTitle>
-            Songs by Genre
-            <BreakdownBadge>{songsPerGenre.length}</BreakdownBadge>
-          </StatTitle>
-          <BreakdownContainer>
-            {songsPerGenre.length === 0 ? (
-              <EmptyNotice>No genres recorded</EmptyNotice>
-            ) : (
-              songsPerGenre.map((g) => (
-                <BreakdownItem key={g._id || "unknown"}>
-                  <BreakdownLabel>{g._id || "Unknown"}</BreakdownLabel>
-                  <BreakdownBadge>{g.count}</BreakdownBadge>
-                </BreakdownItem>
-              ))
-            )}
-          </BreakdownContainer>
-        </StatCard>
+      {viewMode === "analytics" ? (
+        <VisualCharts statistics={statistics} />
+      ) : (
+        <StatsGrid>
+          <StatCard>
+            <StatTitle>Total Songs</StatTitle>
+            <StatValue>{statistics.totalSongs || 0}</StatValue>
+            <span style={{ fontSize: "0.8rem", color: theme.colors.textMuted }}>
+              Catalog count
+            </span>
+          </StatCard>
 
-        <StatCard>
-          <StatTitle>
-            Songs by Artist
-            <BreakdownBadge>{songsPerArtist.length}</BreakdownBadge>
-          </StatTitle>
-          <BreakdownContainer>
-            {songsPerArtist.length === 0 ? (
-              <EmptyNotice>No artists recorded</EmptyNotice>
-            ) : (
-              songsPerArtist.slice(0, 5).map((a) => (
-                <BreakdownItem key={a._id || "unknown"}>
-                  <BreakdownLabel>{a._id || "Unknown"}</BreakdownLabel>
-                  <BreakdownBadge>{a.count}</BreakdownBadge>
-                </BreakdownItem>
-              ))
-            )}
-          </BreakdownContainer>
-        </StatCard>
+          <StatCard>
+            <StatTitle>
+              Songs by Genre
+              <BreakdownBadge>{songsPerGenre.length}</BreakdownBadge>
+            </StatTitle>
+            <BreakdownContainer>
+              {songsPerGenre.length === 0 ? (
+                <EmptyNotice>No genres recorded</EmptyNotice>
+              ) : (
+                songsPerGenre.map((g) => (
+                  <BreakdownItem key={g._id || "unknown"}>
+                    <BreakdownLabel>{g._id || "Unknown"}</BreakdownLabel>
+                    <BreakdownBadge>{g.count}</BreakdownBadge>
+                  </BreakdownItem>
+                ))
+              )}
+            </BreakdownContainer>
+          </StatCard>
 
-        <StatCard>
-          <StatTitle>
-            Albums by Artist
-            <BreakdownBadge>{albumsPerArtist.length}</BreakdownBadge>
-          </StatTitle>
-          <BreakdownContainer>
-            {albumsPerArtist.length === 0 ? (
-              <EmptyNotice>No albums recorded</EmptyNotice>
-            ) : (
-              albumsPerArtist.slice(0, 5).map((item) => (
-                <BreakdownItem key={item._id || "unknown"}>
-                  <BreakdownLabel>{item._id || "Unknown"}</BreakdownLabel>
-                  <BreakdownBadge>{item.count}</BreakdownBadge>
-                </BreakdownItem>
-              ))
-            )}
-          </BreakdownContainer>
-        </StatCard>
-      </StatsGrid>
+          <StatCard>
+            <StatTitle>
+              Songs by Artist
+              <BreakdownBadge>{songsPerArtist.length}</BreakdownBadge>
+            </StatTitle>
+            <BreakdownContainer>
+              {songsPerArtist.length === 0 ? (
+                <EmptyNotice>No artists recorded</EmptyNotice>
+              ) : (
+                songsPerArtist.slice(0, 5).map((a) => (
+                  <BreakdownItem key={a._id || "unknown"}>
+                    <BreakdownLabel>{a._id || "Unknown"}</BreakdownLabel>
+                    <BreakdownBadge>{a.count}</BreakdownBadge>
+                  </BreakdownItem>
+                ))
+              )}
+            </BreakdownContainer>
+          </StatCard>
+
+          <StatCard>
+            <StatTitle>
+              Albums by Artist
+              <BreakdownBadge>{albumsPerArtist.length}</BreakdownBadge>
+            </StatTitle>
+            <BreakdownContainer>
+              {albumsPerArtist.length === 0 ? (
+                <EmptyNotice>No albums recorded</EmptyNotice>
+              ) : (
+                albumsPerArtist.slice(0, 5).map((item) => (
+                  <BreakdownItem key={item._id || "unknown"}>
+                    <BreakdownLabel>{item._id || "Unknown"}</BreakdownLabel>
+                    <BreakdownBadge>{item.count}</BreakdownBadge>
+                  </BreakdownItem>
+                ))
+              )}
+            </BreakdownContainer>
+          </StatCard>
+        </StatsGrid>
+      )}
     </Section>
   );
 };

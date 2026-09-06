@@ -35,6 +35,17 @@ export class SongService {
     return await Song.findByIdAndDelete(id);
   }
 
+  // 5.1. Batch delete songs by array of IDs
+  static async batchDeleteSongs(ids: string[]): Promise<number> {
+    const result = await Song.deleteMany({ _id: { $in: ids } });
+    return result.deletedCount || 0;
+  }
+
+  // 5.2. Batch create/import songs
+  static async batchCreateSongs(songs: ICreateSongDTO[]): Promise<ISongDocument[]> {
+    return await Song.insertMany(songs) as unknown as ISongDocument[];
+  }
+
   // 6. Generate overall statistics using aggregation pipelines
   static async getStatistics(): Promise<IStatistics> {
     const [

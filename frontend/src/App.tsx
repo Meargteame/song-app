@@ -7,6 +7,10 @@ import {
   createSongStart,
   updateSongStart,
   deleteSongStart,
+  batchDeleteStart,
+  selectAllSongs,
+  clearSelectedSongs,
+  setActiveTab,
   clearNotification,
 } from "./store/slices/songSlice";
 import { Song, CreateSongDTO } from "./types";
@@ -15,10 +19,83 @@ import { Navbar } from "./components/Navbar";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { SongCard } from "./components/SongCard";
 import { SongModal } from "./components/SongModal";
+import { AudioPlayerBar } from "./components/AudioPlayerBar";
+import { LyricsDrawer } from "./components/LyricsDrawer";
+import { ExportImportModal } from "./components/ExportImportModal";
 
 const AppWrapper = styled.div`
   min-height: 100vh;
   background-color: ${theme.colors.background};
+  padding-bottom: 90px; /* Space for sticky audio player bar */
+`;
+
+const TabsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid ${theme.colors.cardBorder};
+  padding-bottom: 0.75rem;
+`;
+
+const TabButton = styled.button<{ active: boolean }>`
+  background: ${({ active }) => (active ? "#27272a" : "transparent")};
+  color: ${({ active }) => (active ? theme.colors.textPrimary : theme.colors.textMuted)};
+  border: 1px solid ${({ active }) => (active ? "#3f3f46" : "transparent")};
+  padding: 0.45rem 0.95rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.15s ease;
+
+  &:hover {
+    color: ${theme.colors.textPrimary};
+    background: #27272a;
+  }
+`;
+
+const BatchBar = styled.div`
+  background: #18181c;
+  border: 1px solid #38bdf8;
+  border-radius: 8px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  animation: slideDown 0.2s ease-out;
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+
+const BatchMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: ${theme.colors.textPrimary};
+`;
+
+const BatchActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 `;
 
 const ControlsBar = styled.div`
@@ -120,15 +197,14 @@ const CountBadge = styled.span`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
+  gap: 1.15rem;
 `;
 
 const Toast = styled.div<{ type: "success" | "error" }>`
   position: fixed;
-  bottom: 1.5rem;
+  bottom: 5.5rem;
   right: 1.5rem;
-  background: ${({ type }) =>
-    type === "success" ? "#18181b" : "#18181b"};
+  background: #18181b;
   border: 1px solid
     ${({ type }) =>
       type === "success" ? "rgba(34, 197, 94, 0.4)" : "rgba(239, 68, 68, 0.4)"};
@@ -156,9 +232,15 @@ const EmptyState = styled.div`
 
 export const App: React.FC = () => {
   const dispatch = useAppDispatch();
-  const { songs, loading, error, successMessage, statistics } = useAppSelector(
-    (state) => state.songs
-  );
+  const {
+    songs,
+    loading,
+    error,
+    successMessage,
+    statistics,
+    activeTab,
+    selectedSongIds,
+  } = useAppSelector((state) => state.songs);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSong, setEditingSong] = useState<Song | null>(null);
@@ -191,9 +273,7 @@ export const App: React.FC = () => {
 
   const handleModalSubmit = (formData: CreateSongDTO) => {
     if (editingSong) {
-      dispatch(
-        updateSongStart({ id: editingSong._id, data: formData })
-      );
+      dispatch(updateSongStart({ id: editingSong._id, data: formData }));
     } else {
       dispatch(createSongStart(formData));
     }
@@ -205,17 +285,42 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleBatchDelete = () => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${selectedSongIds.length} selected song(s)?`
+      )
+    ) {
+      dispatch(batchDeleteStart(selectedSongIds));
+    }
+  };
+
+  // Filter based on Active Tab (All vs Favorites) and Search query
   const filteredSongs = useMemo(() => {
-    if (!searchQuery.trim()) return songs;
+    let list = songs || [];
+    if (activeTab === "favorites") {
+      list = list.filter((s) => s.isFavorite);
+    }
+
+    if (!searchQuery.trim()) return list;
     const query = searchQuery.toLowerCase();
-    return songs.filter(
+    return list.filter(
       (s) =>
         s.title.toLowerCase().includes(query) ||
         s.artist.toLowerCase().includes(query) ||
         s.album.toLowerCase().includes(query) ||
-        s.genre.toLowerCase().includes(query)
+        s.genre.toLowerCase().includes(query) ||
+        (s.releaseYear && String(s.releaseYear).includes(query))
     );
-  }, [songs, searchQuery]);
+  }, [songs, activeTab, searchQuery]);
+
+  const handleSelectAllVisible = () => {
+    dispatch(selectAllSongs(filteredSongs.map((s) => s._id)));
+  };
+
+  const favoritesCount = useMemo(() => {
+    return (songs || []).filter((s) => s.isFavorite).length;
+  }, [songs]);
 
   return (
     <AppWrapper>
@@ -224,12 +329,60 @@ export const App: React.FC = () => {
 
         <StatsDashboard />
 
+        {/* Navigation Tabs */}
+        <TabsRow>
+          <TabButton
+            active={activeTab === "all"}
+            onClick={() => dispatch(setActiveTab("all"))}
+          >
+            🎵 All Songs ({songs.length})
+          </TabButton>
+          <TabButton
+            active={activeTab === "favorites"}
+            onClick={() => dispatch(setActiveTab("favorites"))}
+          >
+            ❤️ Favorites ({favoritesCount})
+          </TabButton>
+        </TabsRow>
+
+        {/* Batch Operations Toolbar */}
+        {selectedSongIds.length > 0 && (
+          <BatchBar>
+            <BatchMeta>
+              <span>⚡ {selectedSongIds.length} song(s) selected</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSelectAllVisible}
+              >
+                Select All Visible ({filteredSongs.length})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => dispatch(clearSelectedSongs())}
+              >
+                Clear Selection
+              </Button>
+            </BatchMeta>
+            <BatchActions>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleBatchDelete}
+              >
+                🗑️ Delete Selected ({selectedSongIds.length})
+              </Button>
+            </BatchActions>
+          </BatchBar>
+        )}
+
         <ControlsBar>
           <ControlsLeft>
             <SearchInputWrapper>
               <SearchIcon>⌕</SearchIcon>
               <SearchInput
-                placeholder="Search by title, artist, album, genre..."
+                placeholder="Search by title, artist, album, genre, year..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -255,26 +408,46 @@ export const App: React.FC = () => {
 
         <SectionHeader>
           <SectionTitle>
-            Catalog
+            {activeTab === "favorites" ? "❤️ Favorite Tracks" : "Catalog"}
             <CountBadge>{filteredSongs.length} songs</CountBadge>
           </SectionTitle>
         </SectionHeader>
 
         {loading && songs.length === 0 ? (
-          <p style={{ color: theme.colors.textMuted, fontSize: "0.9rem" }}>Loading songs...</p>
+          <p style={{ color: theme.colors.textMuted, fontSize: "0.9rem" }}>
+            Loading songs...
+          </p>
         ) : filteredSongs.length === 0 ? (
           <EmptyState>
-            <h3 style={{ margin: "0 0 0.5rem 0", color: theme.colors.textPrimary, fontSize: "1.1rem" }}>
-              No Songs Found
+            <h3
+              style={{
+                margin: "0 0 0.5rem 0",
+                color: theme.colors.textPrimary,
+                fontSize: "1.1rem",
+              }}
+            >
+              {activeTab === "favorites"
+                ? "No Favorites Yet"
+                : "No Songs Found"}
             </h3>
-            <p style={{ color: theme.colors.textMuted, margin: "0 0 1.25rem 0", fontSize: "0.875rem" }}>
-              {searchQuery
+            <p
+              style={{
+                color: theme.colors.textMuted,
+                margin: "0 0 1.25rem 0",
+                fontSize: "0.875rem",
+              }}
+            >
+              {activeTab === "favorites"
+                ? "Click the heart icon 🤍 on any song card to add it to your favorites."
+                : searchQuery
                 ? `No songs matching "${searchQuery}".`
                 : "The song catalog is currently empty."}
             </p>
-            <Button variant="primary" onClick={handleOpenAdd}>
-              + Add Song
-            </Button>
+            {activeTab === "all" && (
+              <Button variant="primary" onClick={handleOpenAdd}>
+                + Add Song
+              </Button>
+            )}
           </EmptyState>
         ) : (
           <Grid>
@@ -295,6 +468,15 @@ export const App: React.FC = () => {
           onSubmit={handleModalSubmit}
           initialData={editingSong}
         />
+
+        {/* Lyrics Drawer Modal */}
+        <LyricsDrawer />
+
+        {/* Backup & Export/Import Modal */}
+        <ExportImportModal />
+
+        {/* Floating Bottom Audio Player */}
+        <AudioPlayerBar />
 
         {successMessage && <Toast type="success">✓ {successMessage}</Toast>}
         {error && <Toast type="error">✕ {error}</Toast>}

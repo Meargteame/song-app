@@ -25,6 +25,33 @@ const SongSchema: Schema = new Schema(
       required: [true, "Genre is required"],
       trim: true,
     },
+    duration: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    releaseYear: {
+      type: Number,
+      default: null,
+    },
+    coverArt: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    audioUrl: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    lyrics: {
+      type: String,
+      default: "",
+    },
+    isFavorite: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

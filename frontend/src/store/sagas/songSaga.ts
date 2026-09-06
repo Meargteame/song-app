@@ -1,4 +1,4 @@
-import { call, put, takeLatest, all } from "redux-saga/effects";
+import { call, put, takeLatest, select, all } from "redux-saga/effects";
 import { PayloadAction } from "@reduxjs/toolkit";
 import { songApi } from "../../api/songApi";
 import {
@@ -21,10 +21,18 @@ import {
   deleteSongStart,
   deleteSongSuccess,
   deleteSongFailure,
+  batchDeleteStart,
+  batchDeleteSuccess,
+  batchDeleteFailure,
+  batchCreateStart,
+  batchCreateSuccess,
+  batchCreateFailure,
+  toggleFavoriteStart,
   fetchStatsStart,
   fetchStatsSuccess,
   fetchStatsFailure,
 } from "../slices/songSlice";
+import { RootState } from "../index";
 
 // 1. Worker Saga: Fetch Songs
 function* handleFetchSongs(action: PayloadAction<string | undefined>) {
@@ -92,6 +100,49 @@ function* handleDeleteSong(action: PayloadAction<string>) {
   }
 }
 
+// 4.1 Worker Saga: Batch Delete Songs
+function* handleBatchDelete(action: PayloadAction<string[]>) {
+  try {
+    yield call(songApi.batchDelete, action.payload);
+    yield put(batchDeleteSuccess(action.payload));
+    yield put(fetchStatsStart());
+  } catch (error: any) {
+    yield put(
+      batchDeleteFailure(error.response?.data?.message || "Failed to delete selected songs")
+    );
+  }
+}
+
+// 4.2 Worker Saga: Batch Create Songs
+function* handleBatchCreate(action: PayloadAction<CreateSongDTO[]>) {
+  try {
+    const response: ApiResponse<Song[]> = yield call(
+      songApi.batchCreate,
+      action.payload
+    );
+    yield put(batchCreateSuccess(response.data));
+    yield put(fetchStatsStart());
+  } catch (error: any) {
+    yield put(
+      batchCreateFailure(error.response?.data?.message || "Failed to import songs")
+    );
+  }
+}
+
+// 4.3 Worker Saga: Toggle Favorite
+function* handleToggleFavorite(action: PayloadAction<string>) {
+  try {
+    const song: Song | undefined = yield select((state: RootState) =>
+      state.songs.songs.find((s) => s._id === action.payload)
+    );
+    if (song) {
+      yield call(songApi.update, action.payload, { isFavorite: song.isFavorite });
+    }
+  } catch (error) {
+    console.error("Failed to sync favorite status to server", error);
+  }
+}
+
 // 5. Worker Saga: Fetch Statistics
 function* handleFetchStats() {
   try {
@@ -115,6 +166,9 @@ export default function* songSaga() {
     takeLatest(createSongStart.type, handleCreateSong),
     takeLatest(updateSongStart.type, handleUpdateSong),
     takeLatest(deleteSongStart.type, handleDeleteSong),
+    takeLatest(batchDeleteStart.type, handleBatchDelete),
+    takeLatest(batchCreateStart.type, handleBatchCreate),
+    takeLatest(toggleFavoriteStart.type, handleToggleFavorite),
     takeLatest(fetchStatsStart.type, handleFetchStats),
   ]);
 }
