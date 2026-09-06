@@ -23,6 +23,7 @@ import { StatsDashboard } from "./components/StatsDashboard";
 import { SongCard } from "./components/SongCard";
 import { SongTableView } from "./components/SongTableView";
 import { SongModal } from "./components/SongModal";
+import { SongDetailsModal } from "./components/SongDetailsModal";
 import { AudioPlayerBar } from "./components/AudioPlayerBar";
 import { LyricsDrawer } from "./components/LyricsDrawer";
 import { SkeletonGrid } from "./components/SkeletonCard";
@@ -400,6 +401,7 @@ export const App: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSong, setEditingSong] = useState<Song | null>(null);
+  const [detailsSong, setDetailsSong] = useState<Song | null>(null);
 
   // Confirm Modal State
   const [confirmState, setConfirmState] = useState<{
@@ -662,6 +664,7 @@ export const App: React.FC = () => {
           songs={filteredSongs}
           onEdit={handleOpenEdit}
           onDelete={handleDelete}
+          onViewDetails={(song) => setDetailsSong(song)}
         />
       ) : (
         <Grid>
@@ -671,6 +674,7 @@ export const App: React.FC = () => {
                 song={song}
                 onEdit={handleOpenEdit}
                 onDelete={handleDelete}
+                onViewDetails={(song) => setDetailsSong(song)}
               />
             </AnimatedCardWrapper>
           ))}
@@ -700,6 +704,13 @@ export const App: React.FC = () => {
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleModalSubmit}
           initialData={editingSong}
+        />
+
+        <SongDetailsModal
+          song={detailsSong}
+          onClose={() => setDetailsSong(null)}
+          onEdit={handleOpenEdit}
+          onDelete={handleDelete}
         />
 
         <ConfirmModal

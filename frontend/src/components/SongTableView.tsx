@@ -8,7 +8,6 @@ import {
   togglePlayPause,
   toggleFavoriteStart,
   toggleSelectSong,
-  setActiveLyricsSong,
 } from "../store/slices/songSlice";
 import { getSongCover } from "../utils/coverArt";
 
@@ -180,9 +179,10 @@ interface SongTableViewProps {
   songs: Song[];
   onEdit: (song: Song) => void;
   onDelete: (id: string) => void;
+  onViewDetails?: (song: Song) => void;
 }
 
-export const SongTableView: React.FC<SongTableViewProps> = ({ songs, onEdit, onDelete }) => {
+export const SongTableView: React.FC<SongTableViewProps> = ({ songs, onEdit, onDelete, onViewDetails }) => {
   const dispatch = useAppDispatch();
   const { currentSong, isPlaying, selectedSongIds } = useAppSelector((state) => state.songs);
 
@@ -198,7 +198,7 @@ export const SongTableView: React.FC<SongTableViewProps> = ({ songs, onEdit, onD
             <Th>Genre</Th>
             <Th style={{ width: "70px" }}>Duration</Th>
             <Th style={{ width: "50px" }}></Th>
-            <Th style={{ width: "100px", textAlign: "right" }}>Actions</Th>
+            <Th style={{ width: "110px", textAlign: "right" }}>Actions</Th>
           </Tr>
         </thead>
         <tbody>
@@ -240,7 +240,10 @@ export const SongTableView: React.FC<SongTableViewProps> = ({ songs, onEdit, onD
                   </PlayIconBtn>
                 </Td>
 
-                <Td>
+                <Td
+                  onClick={() => onViewDetails && onViewDetails(song)}
+                  style={{ cursor: "pointer" }}
+                >
                   <TrackInfoCell>
                     <TrackThumb src={coverUrl} alt={song.title} />
                     <TitleArtist>
@@ -274,14 +277,13 @@ export const SongTableView: React.FC<SongTableViewProps> = ({ songs, onEdit, onD
 
                 <Td style={{ textAlign: "right" }}>
                   <div style={{ display: "inline-flex", gap: "0.25rem" }}>
-                    {song.lyrics && (
-                      <ActionBtn onClick={() => dispatch(setActiveLyricsSong(song))} title="Lyrics">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                          <polyline points="14 2 14 8 20 8"></polyline>
-                        </svg>
-                      </ActionBtn>
-                    )}
+                    <ActionBtn onClick={() => onViewDetails && onViewDetails(song)} title="Details">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                    </ActionBtn>
                     <ActionBtn onClick={() => onEdit(song)} title="Edit">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
