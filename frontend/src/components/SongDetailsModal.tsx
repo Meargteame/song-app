@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { Song } from "../types";
 import { theme, Button } from "../styles";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { playSong, togglePlayPause, toggleFavoriteStart } from "../store/slices/songSlice";
+import { playSong, togglePlayPause, toggleFavoriteStart, addSongToPlaylist } from "../store/slices/songSlice";
 import { getSongCover } from "../utils/coverArt";
 import { formatDate } from "../utils/formatters";
 
@@ -253,7 +253,7 @@ export const SongDetailsModal: React.FC<SongDetailsModalProps> = ({
   onDelete,
 }) => {
   const dispatch = useAppDispatch();
-  const { currentSong, isPlaying } = useAppSelector((state) => state.songs);
+  const { currentSong, isPlaying, playlists } = useAppSelector((state) => state.songs);
 
   if (!song) return null;
 
@@ -315,6 +315,31 @@ export const SongDetailsModal: React.FC<SongDetailsModalProps> = ({
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
               </svg>
             </HeartCircleBtn>
+
+            <select
+              defaultValue=""
+              onChange={(e) => {
+                if (e.target.value) {
+                  dispatch(addSongToPlaylist({ playlistId: e.target.value, songId: song._id }));
+                  e.target.value = "";
+                }
+              }}
+              style={{
+                padding: "0.45rem 0.65rem",
+                borderRadius: "8px",
+                background: theme.colors.surface,
+                border: `1px solid ${theme.colors.cardBorder}`,
+                color: theme.colors.textPrimary,
+                fontSize: "0.8rem",
+                fontFamily: "inherit",
+                cursor: "pointer",
+              }}
+            >
+              <option value="" disabled>+ Add to Playlist...</option>
+              {playlists.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
 
             <div style={{ marginLeft: "auto", display: "flex", gap: "0.5rem" }}>
               <Button variant="outline" size="sm" onClick={() => { onClose(); onEdit(song); }}>

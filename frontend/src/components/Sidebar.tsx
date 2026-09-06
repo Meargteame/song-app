@@ -200,6 +200,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenAddModal }) => {
       <NavSection>
         <NavSectionLabel>Menu</NavSectionLabel>
         <NavItem
+          active={currentPage === "home"}
+          onClick={() => dispatch(setCurrentPage("home"))}
+        >
+          <svg viewBox="0 0 24 24">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </NavItem>
+
+        <NavItem
           active={currentPage === "songs" && activeTab === "all"}
           onClick={() => {
             dispatch(setCurrentPage("songs"));
@@ -212,6 +223,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenAddModal }) => {
             <circle cx="18" cy="16" r="3"></circle>
           </svg>
           <span>Songs Library</span>
+        </NavItem>
+
+        <NavItem
+          active={currentPage === "playlists"}
+          onClick={() => dispatch(setCurrentPage("playlists"))}
+        >
+          <svg viewBox="0 0 24 24">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <span>Playlists</span>
         </NavItem>
 
         <NavItem

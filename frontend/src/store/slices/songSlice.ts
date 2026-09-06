@@ -1,6 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { Song, Statistics, CreateSongDTO, UpdateSongDTO } from "../../types";
 
+export interface Playlist {
+  id: string;
+  name: string;
+  songIds: string[];
+  createdAt: string;
+}
+
 export interface SongState {
   songs: Song[];
   statistics: Statistics | null;
@@ -12,7 +19,7 @@ export interface SongState {
   // Navigation & View
   activeTab: "all" | "favorites";
   viewMode: "cards" | "analytics";
-  currentPage: "songs" | "analytics";
+  currentPage: "home" | "songs" | "playlists" | "analytics";
   
   // Selection for batch actions
   selectedSongIds: string[];
@@ -21,6 +28,12 @@ export interface SongState {
   currentSong: Song | null;
   isPlaying: boolean;
   volume: number;
+
+  // Recently Played History
+  recentlyPlayed: Song[];
+
+  // User Playlists
+  playlists: Playlist[];
 
   // Theme Mode
   themeMode: "dark" | "light";
@@ -48,11 +61,16 @@ const initialState: SongState = {
   successMessage: null,
   activeTab: "all",
   viewMode: "cards",
-  currentPage: "songs",
+  currentPage: "home",
   selectedSongIds: [],
   currentSong: null,
   isPlaying: false,
   volume: 0.8,
+  recentlyPlayed: [],
+  playlists: [
+    { id: "fav-list-1", name: "Chill Vibes", songIds: [], createdAt: new Date().toISOString() },
+    { id: "fav-list-2", name: "Workout Hits", songIds: [], createdAt: new Date().toISOString() }
+  ],
   themeMode: getInitialTheme(),
   activeLyricsSong: null,
 };
@@ -204,7 +222,7 @@ const songSlice = createSlice({
     setViewMode(state, action: PayloadAction<"cards" | "analytics">) {
       state.viewMode = action.payload;
     },
-    setCurrentPage(state, action: PayloadAction<"songs" | "analytics">) {
+    setCurrentPage(state, action: PayloadAction<"home" | "songs" | "playlists" | "analytics">) {
       state.currentPage = action.payload;
     },
 
@@ -223,10 +241,14 @@ const songSlice = createSlice({
       state.selectedSongIds = [];
     },
 
-    // 8. Player Actions
+    // 8. Player Actions & History
     playSong(state, action: PayloadAction<Song>) {
       state.currentSong = action.payload;
       state.isPlaying = true;
+      state.recentlyPlayed = [
+        action.payload,
+        ...state.recentlyPlayed.filter((s) => s._id !== action.payload._id),
+      ].slice(0, 20);
     },
     togglePlayPause(state) {
       if (state.currentSong) {
@@ -245,6 +267,10 @@ const songSlice = createSlice({
       const nextIndex = (currentIndex + 1) % state.songs.length;
       state.currentSong = state.songs[nextIndex];
       state.isPlaying = true;
+      state.recentlyPlayed = [
+        state.currentSong,
+        ...state.recentlyPlayed.filter((s) => s._id !== state.currentSong?._id),
+      ].slice(0, 20);
     },
     playPrev(state) {
       if (!state.currentSong || state.songs.length === 0) return;
@@ -252,6 +278,41 @@ const songSlice = createSlice({
       const prevIndex = currentIndex <= 0 ? state.songs.length - 1 : currentIndex - 1;
       state.currentSong = state.songs[prevIndex];
       state.isPlaying = true;
+      state.recentlyPlayed = [
+        state.currentSong,
+        ...state.recentlyPlayed.filter((s) => s._id !== state.currentSong?._id),
+      ].slice(0, 20);
+    },
+
+    // Playlists Actions
+    createPlaylist(state, action: PayloadAction<string>) {
+      const name = action.payload.trim();
+      if (!name) return;
+      const newPl: Playlist = {
+        id: `pl-${Date.now()}`,
+        name,
+        songIds: [],
+        createdAt: new Date().toISOString(),
+      };
+      state.playlists.push(newPl);
+      state.successMessage = `Playlist "${name}" created!`;
+    },
+    addSongToPlaylist(state, action: PayloadAction<{ playlistId: string; songId: string }>) {
+      const pl = state.playlists.find((p) => p.id === action.payload.playlistId);
+      if (pl && !pl.songIds.includes(action.payload.songId)) {
+        pl.songIds.push(action.payload.songId);
+        state.successMessage = `Added to playlist "${pl.name}"!`;
+      }
+    },
+    removeSongFromPlaylist(state, action: PayloadAction<{ playlistId: string; songId: string }>) {
+      const pl = state.playlists.find((p) => p.id === action.payload.playlistId);
+      if (pl) {
+        pl.songIds = pl.songIds.filter((id) => id !== action.payload.songId);
+      }
+    },
+    deletePlaylist(state, action: PayloadAction<string>) {
+      state.playlists = state.playlists.filter((p) => p.id !== action.payload);
+      state.successMessage = "Playlist deleted!";
     },
 
     // 9. Modals & Drawers
@@ -311,6 +372,10 @@ export const {
   setVolume,
   playNext,
   playPrev,
+  createPlaylist,
+  addSongToPlaylist,
+  removeSongFromPlaylist,
+  deletePlaylist,
   setActiveLyricsSong,
   toggleThemeMode,
   setCurrentPage,

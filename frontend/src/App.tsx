@@ -19,6 +19,8 @@ import { Song, CreateSongDTO } from "./types";
 import { theme, Button } from "./styles";
 import { useSongFilters, SortOption } from "./hooks/useSongFilters";
 import { Sidebar } from "./components/Sidebar";
+import { HomePage } from "./components/HomePage";
+import { PlaylistsPage } from "./components/PlaylistsPage";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { SongCard } from "./components/SongCard";
 import { SongTableView } from "./components/SongTableView";
@@ -696,7 +698,27 @@ export const App: React.FC = () => {
 
       <MainCanvas>
         {/* Page Router */}
-        {currentPage === "songs" ? renderSongsPage() : renderAnalyticsPage()}
+        {currentPage === "home" ? (
+          <PageContent key="home">
+            <HomePage
+              onEdit={handleOpenEdit}
+              onDelete={handleDelete}
+              onViewDetails={(s) => setDetailsSong(s)}
+            />
+          </PageContent>
+        ) : currentPage === "playlists" ? (
+          <PageContent key="playlists">
+            <PlaylistsPage
+              onEdit={handleOpenEdit}
+              onDelete={handleDelete}
+              onViewDetails={(s) => setDetailsSong(s)}
+            />
+          </PageContent>
+        ) : currentPage === "songs" ? (
+          renderSongsPage()
+        ) : (
+          renderAnalyticsPage()
+        )}
 
         {/* Modals */}
         <SongModal
