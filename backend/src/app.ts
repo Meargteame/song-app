@@ -17,7 +17,19 @@ app.use(express.json());
 // 4. Mount API Routes
 app.use("/api/songs", songRoutes);
 
-// 5. Health Check Endpoint
+// 5. Root & Health Check Endpoints
+app.get("/", (_req: Request, res: Response) => {
+  res.status(200).json({
+    message: "Welcome to AuraTune API Server 🎵",
+    status: "Healthy",
+    endpoints: {
+      songs: "/api/songs",
+      statistics: "/api/songs/statistics",
+      health: "/health",
+    },
+  });
+});
+
 app.get("/health", (_req: Request, res: Response) => {
   res.status(200).json({ status: "OK", message: "Server is healthy and running" });
 });
