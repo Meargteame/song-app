@@ -39,6 +39,15 @@ const PlayerContainer = styled.div`
     height: 80px;
     padding: 0 1rem;
   }
+
+  @media (max-width: 640px) {
+    bottom: 60px;
+    height: 64px;
+    padding: 0 0.85rem;
+    z-index: 1050;
+    background: #181818;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
 `;
 
 const TrackInfo = styled.div`
