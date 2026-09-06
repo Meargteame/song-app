@@ -16,9 +16,9 @@ import {
   playSong,
 } from "./store/slices/songSlice";
 import { Song, CreateSongDTO } from "./types";
-import { Container, theme, Button } from "./styles";
+import { theme, Button } from "./styles";
 import { useSongFilters, SortOption } from "./hooks/useSongFilters";
-import { Navbar } from "./components/Navbar";
+import { Sidebar } from "./components/Sidebar";
 import { StatsDashboard } from "./components/StatsDashboard";
 import { SongCard } from "./components/SongCard";
 import { SongTableView } from "./components/SongTableView";
@@ -40,10 +40,24 @@ const toastSlide = keyframes`
 `;
 
 /* ——— Layout ——— */
-const AppWrapper = styled.div`
+const LayoutWrapper = styled.div`
+  display: flex;
   min-height: 100vh;
   background-color: ${theme.colors.background};
-  padding-bottom: 90px;
+`;
+
+const MainCanvas = styled.main`
+  flex: 1;
+  margin-left: 240px;
+  padding: 2rem 2.5rem 110px 2.5rem;
+  box-sizing: border-box;
+  min-height: 100vh;
+  overflow-x: hidden;
+
+  @media (max-width: 768px) {
+    margin-left: 70px;
+    padding: 1.5rem 1rem 100px 1rem;
+  }
 `;
 
 /* ——— Page Container (animated swap) ——— */
@@ -673,10 +687,10 @@ export const App: React.FC = () => {
   );
 
   return (
-    <AppWrapper>
-      <Container>
-        <Navbar onOpenAddModal={handleOpenAdd} />
+    <LayoutWrapper>
+      <Sidebar onOpenAddModal={handleOpenAdd} />
 
+      <MainCanvas>
         {/* Page Router */}
         {currentPage === "songs" ? renderSongsPage() : renderAnalyticsPage()}
 
@@ -702,7 +716,7 @@ export const App: React.FC = () => {
 
         {successMessage && <Toast type="success">{successMessage}</Toast>}
         {error && <Toast type="error">{error}</Toast>}
-      </Container>
-    </AppWrapper>
+      </MainCanvas>
+    </LayoutWrapper>
   );
 };
