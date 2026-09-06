@@ -16,14 +16,13 @@ const Card = styled.div<{ isSelected: boolean }>`
   background: ${theme.colors.cardBg};
   border: 1px solid
     ${({ isSelected }) =>
-      isSelected ? "#52525b" : theme.colors.cardBorder};
+      isSelected ? "var(--border-strong)" : theme.colors.cardBorder};
   border-radius: 10px;
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   box-shadow: ${theme.shadows.card};
-  transition: border-color 0.15s ease, transform 0.15s ease;
   position: relative;
 
   &:hover {

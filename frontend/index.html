@@ -1,26 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'><path d='M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z'/></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SongStudio — Modern Music Catalog & Analytics</title>
+    <title>Song Management — Music Catalog & Analytics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <style>
+      :root, [data-theme="dark"] {
+        --bg-app: #09090b;
+        --bg-surface: #121215;
+        --bg-surface-hover: #18181c;
+        --bg-card: #141417;
+        --bg-card-hover: #19191d;
+        --bg-input: #09090b;
+        --border-subtle: #27272a;
+        --border-strong: #3f3f46;
+        --btn-primary-bg: #ffffff;
+        --btn-primary-text: #09090b;
+        --btn-primary-hover: #f4f4f5;
+        --btn-secondary-bg: #18181b;
+        --btn-secondary-hover: #27272a;
+        --color-danger: #ef4444;
+        --color-danger-bg: rgba(239, 68, 68, 0.1);
+        --color-danger-border: rgba(239, 68, 68, 0.25);
+        --color-danger-hover: #dc2626;
+        --text-primary: #fafafa;
+        --text-secondary: #a1a1aa;
+        --text-muted: #71717a;
+        --tag-bg: #1c1c21;
+        --tag-border: #2d2d34;
+        --tag-text: #d4d4d8;
+        --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4);
+        --shadow-card-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.5);
+        --shadow-popover: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
+        --scrollbar-track: #09090b;
+        --scrollbar-thumb: #27272a;
+        --scrollbar-thumb-hover: #3f3f46;
+        --player-bg: rgba(18, 18, 21, 0.96);
+        --modal-bg: #141417;
+        --tab-active-bg: #27272a;
+        --tab-active-border: #3f3f46;
+      }
+
+      [data-theme="light"] {
+        --bg-app: #f8fafc;
+        --bg-surface: #f1f5f9;
+        --bg-surface-hover: #e2e8f0;
+        --bg-card: #ffffff;
+        --bg-card-hover: #f8fafc;
+        --bg-input: #ffffff;
+        --border-subtle: #e2e8f0;
+        --border-strong: #cbd5e1;
+        --btn-primary-bg: #0f172a;
+        --btn-primary-text: #ffffff;
+        --btn-primary-hover: #1e293b;
+        --btn-secondary-bg: #f1f5f9;
+        --btn-secondary-hover: #e2e8f0;
+        --color-danger: #e11d48;
+        --color-danger-bg: rgba(225, 29, 72, 0.08);
+        --color-danger-border: rgba(225, 29, 72, 0.2);
+        --color-danger-hover: #be123c;
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #94a3b8;
+        --tag-bg: #f1f5f9;
+        --tag-border: #e2e8f0;
+        --tag-text: #334155;
+        --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+        --shadow-card-hover: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+        --shadow-popover: 0 10px 30px -10px rgba(0, 0, 0, 0.12);
+        --scrollbar-track: #f8fafc;
+        --scrollbar-thumb: #cbd5e1;
+        --scrollbar-thumb-hover: #94a3b8;
+        --player-bg: rgba(255, 255, 255, 0.96);
+        --modal-bg: #ffffff;
+        --tab-active-bg: #e2e8f0;
+        --tab-active-border: #cbd5e1;
+      }
+
       * {
         box-sizing: border-box;
       }
       body {
         margin: 0;
         padding: 0;
-        background-color: #070709;
+        background-color: var(--bg-app);
         font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
-        color: #f4f4f5;
+        color: var(--text-primary);
         overflow-x: hidden;
+        transition: background-color 0.25s ease, color 0.25s ease;
+      }
+      div, header, section, button, input, select, textarea {
+        transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease, box-shadow 0.2s ease;
       }
       /* Custom modern scrollbar */
       ::-webkit-scrollbar {
@@ -28,14 +104,14 @@
         height: 6px;
       }
       ::-webkit-scrollbar-track {
-        background: #09090b;
+        background: var(--scrollbar-track);
       }
       ::-webkit-scrollbar-thumb {
-        background: #27272a;
+        background: var(--scrollbar-thumb);
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #3f3f46;
+        background: var(--scrollbar-thumb-hover);
       }
     </style>
   </head>

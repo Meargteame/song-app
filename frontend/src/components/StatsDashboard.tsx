@@ -34,15 +34,14 @@ const ViewToggle = styled.div`
 `;
 
 const ToggleBtn = styled.button<{ active: boolean }>`
-  background: ${({ active }) => (active ? "#27272a" : "transparent")};
+  background: ${({ active }) => (active ? "var(--tab-active-bg)" : "transparent")};
   color: ${({ active }) => (active ? theme.colors.textPrimary : theme.colors.textMuted)};
-  border: none;
+  border: 1px solid ${({ active }) => (active ? "var(--tab-active-border)" : "transparent")};
   font-size: 0.75rem;
   font-weight: 500;
   padding: 0.25rem 0.65rem;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.15s ease;
 
   &:hover {
     color: ${theme.colors.textPrimary};

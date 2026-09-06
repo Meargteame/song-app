@@ -21,9 +21,22 @@ export interface SongState {
   isPlaying: boolean;
   volume: number;
 
+  // Theme Mode
+  themeMode: "dark" | "light";
+
   // Active Lyrics Modal
   activeLyricsSong: Song | null;
 }
+
+const getInitialTheme = (): "dark" | "light" => {
+  try {
+    const saved = localStorage.getItem("song_theme");
+    if (saved === "light" || saved === "dark") return saved;
+  } catch {
+    // fallback
+  }
+  return "dark";
+};
 
 const initialState: SongState = {
   songs: [],
@@ -38,6 +51,7 @@ const initialState: SongState = {
   currentSong: null,
   isPlaying: false,
   volume: 0.8,
+  themeMode: getInitialTheme(),
   activeLyricsSong: null,
 };
 
@@ -240,6 +254,16 @@ const songSlice = createSlice({
       state.activeLyricsSong = action.payload;
     },
 
+    // 10. Theme Mode
+    toggleThemeMode(state) {
+      state.themeMode = state.themeMode === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem("song_theme", state.themeMode);
+      } catch {
+        // ignore
+      }
+    },
+
     // Clear alerts/messages
     clearNotification(state) {
       state.error = null;
@@ -283,6 +307,7 @@ export const {
   playNext,
   playPrev,
   setActiveLyricsSong,
+  toggleThemeMode,
   clearNotification,
 } = songSlice.actions;
 

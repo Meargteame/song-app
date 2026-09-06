@@ -16,7 +16,7 @@ const Overlay = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background: #141417;
+  background: ${theme.colors.cardBg};
   border: 1px solid ${theme.colors.cardBorderHover};
   border-radius: 12px;
   width: 100%;
@@ -93,7 +93,7 @@ const FormGroup = styled.div`
     padding: 0.6rem 0.8rem;
     border-radius: 6px;
     border: 1px solid ${theme.colors.cardBorder};
-    background: #09090b;
+    background: ${theme.colors.inputBg};
     color: ${theme.colors.textPrimary};
     font-size: 0.875rem;
     box-sizing: border-box;
@@ -101,7 +101,7 @@ const FormGroup = styled.div`
 
     &:focus {
       outline: none;
-      border-color: #52525b;
+      border-color: ${theme.colors.cardBorderHover};
     }
 
     &::placeholder {
@@ -128,14 +128,14 @@ const Pill = styled.button<{ selected: boolean }>`
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   border: 1px solid
-    ${({ selected }) => (selected ? "#52525b" : theme.colors.cardBorder)};
-  background: ${({ selected }) => (selected ? "#27272a" : theme.colors.surface)};
+    ${({ selected }) => (selected ? "var(--tab-active-border)" : theme.colors.cardBorder)};
+  background: ${({ selected }) => (selected ? "var(--tab-active-bg)" : theme.colors.surface)};
   color: ${({ selected }) => (selected ? theme.colors.textPrimary : theme.colors.textMuted)};
   cursor: pointer;
 
   &:hover {
     color: ${theme.colors.textPrimary};
-    background: #27272a;
+    background: var(--tab-active-bg);
   }
 `;
 

@@ -78,7 +78,7 @@ const LyricsBody = styled.div`
   line-height: 1.8;
   color: ${theme.colors.textPrimary};
   white-space: pre-wrap;
-  background: #09090b;
+  background: ${theme.colors.inputBg};
   flex: 1;
 `;
 

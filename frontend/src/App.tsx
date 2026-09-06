@@ -39,9 +39,9 @@ const TabsRow = styled.div`
 `;
 
 const TabButton = styled.button<{ active: boolean }>`
-  background: ${({ active }) => (active ? "#27272a" : "transparent")};
+  background: ${({ active }) => (active ? "var(--tab-active-bg)" : "transparent")};
   color: ${({ active }) => (active ? theme.colors.textPrimary : theme.colors.textMuted)};
-  border: 1px solid ${({ active }) => (active ? "#3f3f46" : "transparent")};
+  border: 1px solid ${({ active }) => (active ? "var(--tab-active-border)" : "transparent")};
   padding: 0.45rem 0.95rem;
   border-radius: 6px;
   font-size: 0.85rem;
@@ -50,11 +50,10 @@ const TabButton = styled.button<{ active: boolean }>`
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  transition: all 0.15s ease;
 
   &:hover {
     color: ${theme.colors.textPrimary};
-    background: #27272a;
+    background: var(--tab-active-bg);
   }
 `;
 
@@ -192,12 +191,12 @@ const Toast = styled.div<{ type: "success" | "error" }>`
   position: fixed;
   bottom: 5.5rem;
   right: 1.5rem;
-  background: #18181b;
+  background: ${theme.colors.cardBg};
   border: 1px solid
     ${({ type }) =>
       type === "success" ? "rgba(34, 197, 94, 0.4)" : "rgba(239, 68, 68, 0.4)"};
   color: ${({ type }) =>
-    type === "success" ? "#4ade80" : "#f87171"};
+    type === "success" ? "#16a34a" : "#dc2626"};
   padding: 0.75rem 1.25rem;
   border-radius: 8px;
   box-shadow: ${theme.shadows.popover};
@@ -228,10 +227,16 @@ export const App: React.FC = () => {
     statistics,
     activeTab,
     selectedSongIds,
+    themeMode,
   } = useAppSelector((state) => state.songs);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSong, setEditingSong] = useState<Song | null>(null);
+
+  // Sync document theme
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", themeMode);
+  }, [themeMode]);
 
   // Custom filter hook handles search query, genre filtering, and favorites
   const {

@@ -2,42 +2,42 @@ import styled from "@emotion/styled";
 
 export const theme = {
   colors: {
-    // Professional clean dark canvas (Linear/Vercel style)
-    background: "#09090b",
-    surface: "#121215",
-    surfaceHover: "#18181c",
-    cardBg: "#141417",
-    cardBgHover: "#19191d",
-    cardBorder: "#27272a",
-    cardBorderHover: "#3f3f46",
+    // Dynamic CSS theme variables
+    background: "var(--bg-app)",
+    surface: "var(--bg-surface)",
+    surfaceHover: "var(--bg-surface-hover)",
+    cardBg: "var(--bg-card)",
+    cardBgHover: "var(--bg-card-hover)",
+    cardBorder: "var(--border-subtle)",
+    cardBorderHover: "var(--border-strong)",
     
-    // Crisp monochrome primary
-    primary: "#ffffff",
-    primaryText: "#09090b",
-    primaryHover: "#f4f4f5",
+    primary: "var(--btn-primary-bg)",
+    primaryText: "var(--btn-primary-text)",
+    primaryHover: "var(--btn-primary-hover)",
     
-    secondary: "#18181b",
-    secondaryBorder: "#27272a",
-    secondaryText: "#e4e4e7",
-    secondaryHover: "#27272a",
+    secondary: "var(--btn-secondary-bg)",
+    secondaryBorder: "var(--border-subtle)",
+    secondaryText: "var(--text-secondary)",
+    secondaryHover: "var(--btn-secondary-hover)",
     
-    danger: "#ef4444",
-    dangerBg: "rgba(239, 68, 68, 0.1)",
-    dangerBorder: "rgba(239, 68, 68, 0.25)",
-    dangerHover: "#dc2626",
+    danger: "var(--color-danger)",
+    dangerBg: "var(--color-danger-bg)",
+    dangerBorder: "var(--color-danger-border)",
+    dangerHover: "var(--color-danger-hover)",
     
-    textPrimary: "#fafafa",
-    textSecondary: "#a1a1aa",
-    textMuted: "#71717a",
+    textPrimary: "var(--text-primary)",
+    textSecondary: "var(--text-secondary)",
+    textMuted: "var(--text-muted)",
     
-    tagBg: "#1c1c21",
-    tagBorder: "#2d2d34",
-    tagText: "#d4d4d8",
+    tagBg: "var(--tag-bg)",
+    tagBorder: "var(--tag-border)",
+    tagText: "var(--tag-text)",
+    inputBg: "var(--bg-input)",
   },
   shadows: {
-    card: "0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4)",
-    cardHover: "0 4px 12px 0 rgba(0, 0, 0, 0.5)",
-    popover: "0 10px 30px -10px rgba(0, 0, 0, 0.8)",
+    card: "var(--shadow-card)",
+    cardHover: "var(--shadow-card-hover)",
+    popover: "var(--shadow-popover)",
   },
   fonts: {
     heading: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif",
